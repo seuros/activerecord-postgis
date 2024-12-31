@@ -7,8 +7,7 @@ gemspec
 
 gem "rake", "~> 13.0"
 
-gem "annotate"
 gem "railties"
-gem "sqlite3"
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 gem "rubocop-rails-omakase", require: false
+gem "activerecord", ENV.fetch("RAILS_VERSION", "~> 7.2")

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -12,15 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 20_241_007_210_150) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_07_210150) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "hypopg"
   enable_extension "plpgsql"
   enable_extension "postgis"
   enable_extension "uuid-ossp"
 
-  # Could not dump table "countries" because of following StandardError
-  #   Unknown type 'geography(Point,4326)' for column 'point_geom'
+# Could not dump table "countries" because of following StandardError
+#   Unknown type 'geography(Point,4326)' for column 'point_geom'
+
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"

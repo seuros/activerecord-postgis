@@ -5,7 +5,7 @@ default: &default
   port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
   host: <%= ENV.fetch("DATABASE_HOST", '127.1') %>
   user: <%= ENV.fetch("DATABASE_USER", 'postgres') %>
-  password: <%= ENV.fetch("DATABASE_PASSWORD", 'postgres') %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", 'ubuntu') %>
 
 development:
   <<: *default

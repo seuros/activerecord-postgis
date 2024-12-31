@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CreateUser < ActiveRecord::Migration[7.2]
-  def change
+  def up
     enable_extension "uuid-ossp"
 
     create_table :users, id: :uuid do |t|

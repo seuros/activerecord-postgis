@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Activerecord
+module ActiveRecord
   module ConnectionAdapters
     module PostGIS
       VERSION = "0.1.0"

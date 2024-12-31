@@ -1,10 +1,11 @@
-# Activerecord::Postgis
+# Activerecord::PostGIS
 
-Activerecord::Postgis is a Ruby gem that extends the PostgreSQL adapter in Active Record to support PostGIS spatial types and functions.
+Activerecord::PostGIS is a Ruby gem that extends the PostgreSQL adapter in Active Record to support PostGIS spatial types and functions.
 
 ## Description
 
-This gem enhances the functionality of the PostgreSQL adapter by adding support for PostGIS-specific data types. Unlike the PostGIS adapter gem, which provides a separate adapter, Activerecord::Postgis extends the existing PostgresqlAdapter with the correct types for working with spatial data in PostGIS.
+This gem enhances the functionality of the PostgreSQL adapter by adding support for PostGIS-specific data types. 
+Unlike the PostGIS adapter gem, which provides a separate adapter, Activerecord::PostGIS extends the existing PostgresqlAdapter with the correct types for working with spatial data in PostGIS.
 
 ## Installation
 
@@ -61,7 +62,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/seuros
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Activerecord::Postgis project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/your_username/activerecord-postgis/blob/master/CODE_OF_CONDUCT.md).

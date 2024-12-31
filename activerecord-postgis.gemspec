@@ -4,7 +4,7 @@ require_relative 'lib/active_record/connection_adapters/postgis/version'
 
 Gem::Specification.new do |spec|
   spec.name = 'activerecord-postgis'
-  spec.version = Activerecord::ConnectionAdapters::PostGIS::VERSION
+  spec.version = ActiveRecord::ConnectionAdapters::PostGIS::VERSION
   spec.authors = [ 'Abdelkader Boudih' ]
   spec.email = [ 'terminale@gmail.com' ]
 

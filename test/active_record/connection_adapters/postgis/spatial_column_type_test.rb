@@ -23,7 +23,7 @@ module ActiveRecord
 
         def test_point_geography
           point = SpatialColumnType.new("Point", 4326, geography: true)
-          assert_equal "geography(Point)", point.to_sql
+          assert_equal "geography(Point)", point.to_sql # SRID is ignored for geography
         end
 
         def test_multipoint_with_m
