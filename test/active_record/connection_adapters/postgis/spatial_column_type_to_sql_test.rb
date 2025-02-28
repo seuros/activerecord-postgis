@@ -55,7 +55,7 @@ module ActiveRecord
           error = assert_raises(ArgumentError) do
             @adapter.type_to_sql(:st_invalid_type)
           end
-          assert_equal "Invalid geometry type: invalid_type. Valid types are: point, line_string, polygon, multi_point, multi_line_string, multi_polygon, geometry_collection, geography",
+          assert_equal "Invalid geometry type: invalid_type. Valid types are: point, line_string, polygon, multi_point, multi_line_string, multi_polygon, geometry_collection, geography, geometry",
                        error.message
         end
 

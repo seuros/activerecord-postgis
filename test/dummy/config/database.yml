@@ -1,16 +1,28 @@
 default: &default
-  adapter: postgresql
-  encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
-  host: <%= ENV.fetch("DATABASE_HOST", '127.1') %>
-  user: <%= ENV.fetch("DATABASE_USER", 'postgres') %>
-  password: <%= ENV.fetch("DATABASE_PASSWORD", 'ubuntu') %>
+  url: <%= ENV.fetch("DATABASE_URL", 'postgresql://ubuntu:ubuntu@localhost/active_record_test') %>
 
 development:
-  <<: *default
-  database: active_record_development
+  primary:
+    <<: *default
+    database: active_record_development
+  secondary:
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    url: <%= ENV.fetch("DATABASE_URL", 'postgresql://ubuntu:ubuntu@localhost/active_record_quantum_development') %>
+    database: active_record_quantum_development
+    migrations_paths: db/secondary_migrate
 
 test:
-  <<: *default
-  database: active_record_test
+  primary:
+    <<: *default
+    database: active_record_test
+  secondary:
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    url: <%= ENV.fetch("DATABASE_URL", 'postgresql://ubuntu:ubuntu@localhost/active_record_quantum_test') %>
+    database: active_record_quantum_test
+    migrations_paths: db/secondary_migrate
+  sqlite:
+    adapter: sqlite3
+    database: ":memory:"
+    pool: 5
+    timeout: 5000

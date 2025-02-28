@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require "active_record/connection_adapters/postgresql_adapter"
 
 class PostgresAdapterTest < ActiveSupport::TestCase
   test "should list all registered types in PostgreSQL adapter" do

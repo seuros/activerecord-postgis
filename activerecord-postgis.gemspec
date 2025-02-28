@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = spec.summary
   spec.homepage = 'https://github.com/seuros/activerecord-postgis'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.2.0'
+  spec.required_ruby_version = '>= 3.3.0'
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
@@ -21,10 +21,10 @@ Gem::Specification.new do |spec|
   spec.metadata['changelog_uri'] = "#{spec.homepage}/blob/master/CHANGELOG.md"
 
   gemspec = File.basename(__FILE__)
-  spec.files = Dir.glob('{lib}/**/*') + [ gemspec, 'LICENSE.md', 'CHANGELOG.md', 'README.md' ]
+  spec.files = Dir.glob('{lib}/**/*') + [ gemspec, 'LICENSE.txt', 'README.md' ]
   spec.require_paths = [ 'lib' ]
 
-  spec.add_dependency 'activerecord', '>= 7.2.0', '< 8.1'
+  spec.add_dependency 'activerecord', '>= 8.0', '< 8.1'
   spec.add_dependency 'pg'
   spec.add_dependency 'rgeo-activerecord', '>= 8.0'
 end

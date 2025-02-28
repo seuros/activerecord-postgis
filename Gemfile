@@ -10,4 +10,8 @@ gem "rake", "~> 13.0"
 gem "railties"
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 gem "rubocop-rails-omakase", require: false
-gem "activerecord", ENV.fetch("RAILS_VERSION", "~> 7.2")
+
+gem "rails", "~> 8.0.0"
+gem "sqlite3", "~> 2.0"
+
+gem "ruby-lsp", "~> 0.23.23", group: :development
