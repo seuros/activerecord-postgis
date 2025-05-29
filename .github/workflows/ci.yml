@@ -11,17 +11,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }}
-    strategy:
-      matrix:
-        ruby:
-          - '3.3.5'
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgresql://ubuntu:ubuntu@localhost:5432
+
+    services:
+      postgres:
+        image: ghcr.io/seuros/postgis-with-extensions:17-4
+        env:
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_USER: ubuntu
+          POSTGRES_DB: active_record_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Run the default task
+    
+    - name: Setup databases
+      run: |
+        bin/rails app:db:create
+        bin/rails app:db:migrate
+        bin/rails app:db:create:secondary
+        bin/rails app:db:migrate:secondary
+    
+    - name: Run tests
       run: bin/rails test
