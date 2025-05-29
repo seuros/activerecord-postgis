@@ -34,9 +34,9 @@ Once installed, the gem automatically extends the PostgreSQL adapter with PostGI
 Example migration:
 
 ```ruby
-class AddLocationToPost < ActiveRecord::Migration[6.1]
+class AddLocationToPost < ActiveRecord::Migration[8.0]
   def change
-    add_column :users, :location, :point
+    add_column :users, :location, :st_point
   end
 end
 ```
