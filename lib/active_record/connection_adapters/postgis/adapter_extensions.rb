@@ -73,6 +73,12 @@ module ActiveRecord
           table_def.extend(PostGIS::TableDefinition)
           table_def
         end
+
+        # Use PostGIS Arel visitor for spatial queries
+        def arel_visitor
+          require_relative "../../../arel/visitors/postgis"
+          @arel_visitor ||= Arel::Visitors::PostGIS.new(self)
+        end
       end
     end
   end

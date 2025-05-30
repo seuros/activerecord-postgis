@@ -16,7 +16,8 @@ require_relative "postgis/column_methods"
 require_relative "postgis/schema_statements"
 require_relative "postgis/spatial_column_type"
 require_relative "postgis/adapter_extensions"
-require_relative "../../arel/visitors/postgis"
+require_relative "postgis/column_extensions"
+require_relative "postgis/quoting"
 
 module ActiveRecord
   module ConnectionAdapters
@@ -34,6 +35,12 @@ module ActiveRecord
       def self.initialize!
         return if @initialized
         @initialized = true
+
+        # Extend PostgreSQL Column class with spatial functionality
+        ActiveRecord::ConnectionAdapters::PostgreSQL::Column.include(ColumnExtensions)
+
+        # Add spatial object quoting support
+        ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.prepend(Quoting)
 
         # Allow PostGIS specific options in table definitions
         # The `define_column_methods` call already makes these available on the `TableDefinition` instance.

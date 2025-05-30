@@ -35,8 +35,18 @@ module ActiveRecord
             base_type = determine_base_type(col_type, options)
 
 
-            options[:limit] = ColumnDefinitionUtils.limit_from_options(geo_type, options)
+            # Create hash format limit for column metadata
+            spatial_limit = {}
+            spatial_limit[:type] = col_type.to_s
+            spatial_limit[:srid] = options[:srid] if options[:srid] && options[:srid] != (options[:geographic] ? 4326 : 0)
+            spatial_limit[:has_z] = options[:has_z] if options[:has_z]
+            spatial_limit[:has_m] = options[:has_m] if options[:has_m]
+            spatial_limit[:geographic] = options[:geographic] if options[:geographic]
+
+            # Use hash format as limit for spatial columns, string format for SQL generation
+            options[:limit] = spatial_limit.empty? ? nil : spatial_limit
             options[:spatial_type] = geo_type
+            options[:spatial_sql] = ColumnDefinitionUtils.limit_from_options(geo_type, options)
 
 
             column = super(name, base_type, **options)
@@ -51,12 +61,12 @@ module ActiveRecord
 
         # Allow spatial-specific options in column definitions
         def valid_column_definition_options
-          super + [ :srid, :has_z, :has_m, :geographic, :spatial_type ]
+          super + [ :srid, :has_z, :has_m, :geographic, :spatial_type, :spatial_sql ]
         end
 
         def spatial_column_type?(type)
-          type.to_s.start_with?("st_") || 
-          [ :geography, :geometry, :geometry_collection, :line_string, 
+          type.to_s.start_with?("st_") ||
+          [ :geography, :geometry, :geometry_collection, :line_string,
             :multi_line_string, :multi_point, :multi_polygon, :polygon ].include?(type.to_sym)
         end
 
@@ -78,7 +88,7 @@ module ActiveRecord
         def convert_to_st_type(col_type)
           case col_type.to_sym
           when :geometry then :st_geometry
-          when :geometry_collection then :st_geometry_collection  
+          when :geometry_collection then :st_geometry_collection
           when :line_string then :st_line_string
           when :multi_line_string then :st_multi_line_string
           when :multi_point then :st_multi_point

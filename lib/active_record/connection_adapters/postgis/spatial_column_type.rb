@@ -16,11 +16,20 @@ module ActiveRecord
             has_m = false
             geographic = false
 
-            if o.limit.is_a?(String) && o.limit.include?(",")
-              geo_part, srid_part = o.limit.split(",", 2)
+            # Check if we have spatial SQL string from table definition
+            if o.options[:spatial_sql] && o.options[:spatial_sql].include?(",")
+              geo_part, srid_part = o.options[:spatial_sql].split(",", 2)
               srid = srid_part.to_i if srid_part && !srid_part.empty?
               if geo_part
                 # Check for Z and M dimensions at the end of the geometry type
+                has_z = geo_part.end_with?("Z") || geo_part.end_with?("ZM")
+                has_m = geo_part.end_with?("M") || geo_part.end_with?("ZM")
+              end
+            elsif o.limit.is_a?(String) && o.limit.include?(",")
+              # Fallback to parsing limit string (for schema loading)
+              geo_part, srid_part = o.limit.split(",", 2)
+              srid = srid_part.to_i if srid_part && !srid_part.empty?
+              if geo_part
                 has_z = geo_part.end_with?("Z") || geo_part.end_with?("ZM")
                 has_m = geo_part.end_with?("M") || geo_part.end_with?("ZM")
               end
@@ -33,7 +42,7 @@ module ActiveRecord
             end
 
             sql_type = type_to_sql(o.type.to_sym,
-                                   limit: o.limit,
+                                   limit: o.options[:spatial_sql] || o.limit,
                                    precision: o.precision,
                                    scale: o.scale,
                                    srid: srid,
@@ -113,9 +122,9 @@ module ActiveRecord
           type_with_dimensions = build_type_with_dimensions
           # Include SRID if specified and not the default for the type
           # Geography defaults to 4326, geometry defaults to 0
-          should_include_srid = @srid && 
+          should_include_srid = @srid &&
             ((@geography && @srid != 4326) || (!@geography && @srid != 0))
-          
+
           if should_include_srid
             "#{base_type}(#{type_with_dimensions},#{@srid})"
           else
