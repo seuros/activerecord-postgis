@@ -64,6 +64,11 @@ module ActiveRecord
             geom_type = $2
             srid = $3&.to_i
 
+            # Add geographic option for geography columns
+            if spatial_type.downcase == "geography"
+              spec[:geographic] = true
+            end
+
             # Add SRID if not default
             if srid && srid != default_srid(spatial_type)
               spec[:srid] = srid

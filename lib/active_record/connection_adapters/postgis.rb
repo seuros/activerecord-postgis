@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "active_record/connection_adapters/postgresql_adapter"
 require_relative "postgis/version"
 require_relative "postgis/type/geography"
 require_relative "postgis/type/geometry"
@@ -37,18 +38,18 @@ module ActiveRecord
         @initialized = true
 
         # Extend PostgreSQL Column class with spatial functionality
-        ActiveRecord::ConnectionAdapters::PostgreSQL::Column.include(ColumnExtensions)
+        PostgreSQL::Column.include(ColumnExtensions)
 
         # Add spatial object quoting support
-        ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.prepend(Quoting)
+        PostgreSQLAdapter.prepend(Quoting)
 
         # Allow PostGIS specific options in table definitions
         # The `define_column_methods` call already makes these available on the `TableDefinition` instance.
         # The issue might be deeper in how schema.rb is processed or how options are validated.
         # Let's ensure that the column methods are defined *before* any schema loading that might trigger validation.
 
-        ActiveRecord::ConnectionAdapters::PostgreSQL::Table.include(
-          ActiveRecord::ConnectionAdapters::PostGIS::TableDefinition
+        PostgreSQL::Table.include(
+          PostGIS::TableDefinition
         )
 
         # Using st_* prefix to avoid conflicts with PostgreSQL native geometric types
@@ -74,7 +75,7 @@ module ActiveRecord
 
 
         # Tell Rails these are valid column methods for schema dumping - PostgreSQL only
-        ActiveRecord::ConnectionAdapters::PostgreSQL::TableDefinition.send(:define_column_methods,
+        PostgreSQL::TableDefinition.send(:define_column_methods,
                                                                             :st_geography, :st_geometry, :st_geometry_collection, :st_line_string,
                                                                             :st_multi_line_string, :st_multi_point, :st_multi_polygon, :st_point, :st_polygon,
                                                                             # Legacy column methods for compatibility with activerecord-postgis-adapter
@@ -83,10 +84,10 @@ module ActiveRecord
                                                                             *SPATIAL_OPTIONS_FOR_REGISTRATION)
 
         # prevent unknown OID warning and register PostGIS types
-        ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.singleton_class.prepend(RegisterTypes)
+        PostgreSQLAdapter.singleton_class.prepend(RegisterTypes)
 
         # Prepend our extensions to handle spatial columns
-        ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.prepend(AdapterExtensions)
+        PostgreSQLAdapter.prepend(AdapterExtensions)
 
         # Register spatial types with ActiveRecord::Type - use st_* prefix to avoid conflicts
         adapter_name = :postgresql
@@ -113,7 +114,7 @@ module ActiveRecord
         ActiveRecord::Type.register(:polygon, Type::Polygon, adapter: adapter_name)
 
         # Ignore PostGIS system tables in schema dumps - PostgreSQL specific
-        ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaDumper.ignore_tables |= %w[
+        PostgreSQL::SchemaDumper.ignore_tables |= %w[
               geography_columns
               geometry_columns
               layer
