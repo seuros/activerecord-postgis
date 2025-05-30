@@ -21,11 +21,11 @@ class QuantumElectron < QuantumParticle
   validates :energy_shell, numericality: { greater_than: 0 }, allow_nil: true
   validates :charge, numericality: { equal_to: -1.0 }
 
-  scope :spin_up, -> { where(spin_state: 'up') }
-  scope :spin_down, -> { where(spin_state: 'down') }
+  scope :spin_up, -> { where(spin_state: "up") }
+  scope :spin_down, -> { where(spin_state: "down") }
   scope :unpaired, -> { where(paired: false) }
   scope :in_shell, ->(shell) { where(energy_shell: shell) }
-  scope :valence, -> { where(energy_shell: [3, 4, 5, 6, 7]) }
+  scope :valence, -> { where(energy_shell: [ 3, 4, 5, 6, 7 ]) }
 
   # Electrons follow Pauli exclusion principle even in SQLite! 🚫
   def self.max_electrons_in_shell(shell_number)
@@ -35,7 +35,7 @@ class QuantumElectron < QuantumParticle
   def orbital_radius
     return nil unless energy_shell.present?
     # Bohr radius approximation in picometers
-    52.9 * (energy_shell ** 2) 
+    52.9 * (energy_shell ** 2)
   end
 
   def can_pair_with?(other_electron)

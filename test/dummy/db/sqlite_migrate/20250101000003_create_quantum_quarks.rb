@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Migration for quantum quarks in the SQLite dimension  
+# Migration for quantum quarks in the SQLite dimension
 # The most fundamental particles, stored in classical relational format
 class CreateQuantumQuarks < ActiveRecord::Migration[8.0]
   def change
@@ -11,7 +11,7 @@ class CreateQuantumQuarks < ActiveRecord::Migration[8.0]
       t.string :proton_id, comment: "Which proton contains this quark"
       t.string :neutron_id, comment: "Which neutron contains this quark"
       t.boolean :confined, default: true, comment: "Quarks are always confined in hadrons"
-      
+
       t.timestamps null: false, comment: "Classical time tracking"
     end
 

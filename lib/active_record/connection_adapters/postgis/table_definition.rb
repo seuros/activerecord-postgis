@@ -34,8 +34,11 @@ module ActiveRecord
             geo_type = ColumnDefinitionUtils.geo_type(options[:type] || type)
             base_type = determine_base_type(col_type, options)
 
+
             options[:limit] = ColumnDefinitionUtils.limit_from_options(geo_type, options)
             options[:spatial_type] = geo_type
+
+
             column = super(name, base_type, **options)
           else
             column = super(name, type, **options)
@@ -52,7 +55,9 @@ module ActiveRecord
         end
 
         def spatial_column_type?(type)
-          type.to_s.start_with?("st_") || [ :geography, :geometry ].include?(type.to_sym)
+          type.to_s.start_with?("st_") || 
+          [ :geography, :geometry, :geometry_collection, :line_string, 
+            :multi_line_string, :multi_point, :multi_polygon, :polygon ].include?(type.to_sym)
         end
 
         def determine_base_type(col_type, options)
@@ -64,9 +69,24 @@ module ActiveRecord
             if options[:geographic] == true
               :st_geography
             else
-              # Preserve the specific geometry type
-              col_type.to_sym
+              # Convert legacy types to st_ prefixed equivalents
+              convert_to_st_type(col_type)
             end
+          end
+        end
+
+        def convert_to_st_type(col_type)
+          case col_type.to_sym
+          when :geometry then :st_geometry
+          when :geometry_collection then :st_geometry_collection  
+          when :line_string then :st_line_string
+          when :multi_line_string then :st_multi_line_string
+          when :multi_point then :st_multi_point
+          when :multi_polygon then :st_multi_polygon
+          when :polygon then :st_polygon
+          else
+            # Already an st_ type or unknown type
+            col_type.to_sym
           end
         end
       end

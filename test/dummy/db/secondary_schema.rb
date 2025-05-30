@@ -20,6 +20,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_25_200000) do
     t.point "coordinates", comment: "Classical Newtonian coordinates (no quantum superposition here!)"
     t.datetime "created_at", null: false, comment: "Timestamp of last quantum measurement collapse"
     t.datetime "updated_at", null: false, comment: "Timestamp of last quantum measurement collapse"
-    t.index ["email"], name: "index_quantum_observers_on_email", unique: true
+    t.index [ "email" ], name: "index_quantum_observers_on_email", unique: true
   end
 end

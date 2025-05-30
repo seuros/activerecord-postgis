@@ -39,7 +39,8 @@ module ActiveRecord
                                    srid: srid,
                                    geographic: geographic,
                                    has_z: has_z,
-                                   has_m: has_m)
+                                   has_m: has_m,
+                                   geo_part: geo_part)
             column_sql = "#{quote_column_name(o.name)} #{sql_type}"
             add_column_options!(column_sql, column_options(o))
             column_sql
@@ -48,18 +49,35 @@ module ActiveRecord
           end
         end
 
-        def type_to_sql(type, limit: nil, precision: nil, scale: nil, geographic: false, srid: nil, has_z: false, has_m: false, **options)
+        def type_to_sql(type, limit: nil, precision: nil, scale: nil, geographic: false, srid: nil, has_z: false, has_m: false, geo_part: nil, **options)
           if type.to_s =~ /^st_/
-            geometric_type = type.to_s.sub(/^st_/, "")
+            # Use geo_part if available (from limit parsing), otherwise derive from type
+            if geo_part && geo_part != "GEOGRAPHY" && geo_part != "GEOMETRY"
+              # Convert from PostGIS SQL format (e.g., MULTIPOLYGON) to our internal format (e.g., multi_polygon)
+              # First strip any dimension suffixes (Z, M, ZM)
+              base_geo_part = geo_part.upcase.gsub(/[ZM]+$/, "")
+              geometric_type = case base_geo_part
+              when "MULTIPOINT" then "multi_point"
+              when "MULTILINESTRING" then "multi_line_string"
+              when "MULTIPOLYGON" then "multi_polygon"
+              when "GEOMETRYCOLLECTION" then "geometry_collection"
+              when "LINESTRING" then "line_string"
+              else
+                base_geo_part.downcase
+              end
+            else
+              geometric_type = type.to_s.sub(/^st_/, "")
+            end
             # Only use geography if explicitly requested via type or option
             is_geography = type.to_s == "st_geography" || geographic == true
-            PostGIS::SpatialColumnType.new(
+            result = PostGIS::SpatialColumnType.new(
               geometric_type,
               srid,
               has_z: has_z,
               has_m: has_m,
               geography: is_geography
             ).to_sql
+            result
           else
             super(type, limit: limit, precision: precision, scale: scale, **options)
           end
@@ -93,7 +111,12 @@ module ActiveRecord
           return base_type if @type == "geography"
 
           type_with_dimensions = build_type_with_dimensions
-          if @srid && base_type == "geometry"
+          # Include SRID if specified and not the default for the type
+          # Geography defaults to 4326, geometry defaults to 0
+          should_include_srid = @srid && 
+            ((@geography && @srid != 4326) || (!@geography && @srid != 0))
+          
+          if should_include_srid
             "#{base_type}(#{type_with_dimensions},#{@srid})"
           else
             "#{base_type}(#{type_with_dimensions})"

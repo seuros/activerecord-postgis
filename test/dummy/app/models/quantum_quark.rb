@@ -36,9 +36,9 @@ class QuantumQuark < QuantumParticle
   # Quarks cannot exist alone in SQLite - they must be confined! 🔒
   def charge
     case flavor
-    when 'up', 'charm', 'top'
+    when "up", "charm", "top"
       +2.0/3.0  # Up-type quarks have +2/3 charge
-    when 'down', 'strange', 'bottom'
+    when "down", "strange", "bottom"
       -1.0/3.0  # Down-type quarks have -1/3 charge
     end
   end
@@ -49,7 +49,7 @@ class QuantumQuark < QuantumParticle
 
   def color_neutral_with?(quark1, quark2)
     return false unless quark1.is_a?(QuantumQuark) && quark2.is_a?(QuantumQuark)
-    colors = [color_charge, quark1.color_charge, quark2.color_charge].sort
+    colors = [ color_charge, quark1.color_charge, quark2.color_charge ].sort
     colors == %w[blue green red] # RGB = white (color neutral)
   end
 

@@ -9,7 +9,7 @@ class CreateQuantumPhotons < ActiveRecord::Migration[8.0]
       t.float :energy_level, comment: "Photon energy in electron volts"
       t.boolean :polarized, default: false, comment: "Is the photon polarized?"
       t.string :source_star, comment: "Which star emitted this photon"
-      
+
       t.timestamps null: false, comment: "Classical time tracking"
     end
 

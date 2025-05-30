@@ -7,18 +7,20 @@ module ActiveRecord
     module PostGIS
       module Type
         class Spatial < ::ActiveRecord::Type::Value
-          attr_reader :geo_type, :srid, :has_z, :has_m
+          attr_reader :geo_type, :srid, :has_z, :has_m, :geographic
 
-          def initialize(geo_type: "geometry", srid: 0, has_z: false, has_m: false)
-            @geo_type = geo_type
+          def initialize(geo_type: "geometry", srid: 0, has_z: false, has_m: false, geographic: false)
+            @geo_type = geographic ? "geography" : geo_type
             @srid = srid
             @has_z = has_z
             @has_m = has_m
+            @geographic = geographic
             @factory = RGeo::ActiveRecord::SpatialFactoryStore.instance.factory(
-              geo_type: geo_type,
+              geo_type: @geo_type.underscore,
               srid: srid,
-              has_z_coordinate: has_z,
-              has_m_coordinate: has_m
+              has_z: has_z,
+              has_m: has_m,
+              sql_type: (@geographic ? "geography" : "geometry")
             )
           end
 
@@ -52,15 +54,21 @@ module ActiveRecord
           end
 
           def parse_wkt(string)
-            if string =~ /^SRID=(\d+);(.+)/
-              srid = $1.to_i
-              wkt = $2
-              RGeo::Geos.factory(srid: srid).parse_wkt(wkt)
+            if binary_string?(string)
+              # Parse WKB (Well-Known Binary) format
+              wkb_parser = RGeo::WKRep::WKBParser.new(@factory, support_ewkb: true, default_srid: @srid)
+              wkb_parser.parse(string)
             else
-              @factory.parse_wkt(string)
+              # Parse WKT (Well-Known Text) format
+              wkt_parser = RGeo::WKRep::WKTParser.new(@factory, support_ewkt: true, default_srid: @srid)
+              wkt_parser.parse(string)
             end
           rescue RGeo::Error::ParseError
             nil
+          end
+
+          def binary_string?(string)
+            string[0] == "\x00" || string[0] == "\x01" || string[0, 4] =~ /[0-9a-fA-F]{4}/
           end
 
           def parse_hash(hash)

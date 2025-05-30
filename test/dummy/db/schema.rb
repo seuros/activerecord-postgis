@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_25_161000) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_01_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
@@ -39,6 +39,16 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_25_161000) do
   create_table "countries", force: :cascade do |t|
     t.string "name"
     t.point "location"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "foos", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "invalid_attributes", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -86,10 +96,19 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_25_161000) do
     t.st_line_string "path_4d", srid: 4326, has_z: true, has_m: true
   end
 
+  create_table "spatial_foos", force: :cascade do |t|
+    t.bigint "foo_id", null: false
+    t.st_geography "geo_point"
+    t.st_point "cart_point", srid: 3509
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index [ "foo_id" ], name: "index_spatial_foos_on_foo_id"
+  end
+
   create_table "test_native_pg_types", force: :cascade do |t|
     t.string "name"
     t.point "pg_point"
-    t.polygon "pg_polygon"
+    t.st_polygon "pg_polygon"
     t.st_point "gis_point"
     t.st_polygon "gis_polygon"
     t.datetime "created_at", null: false
@@ -140,4 +159,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_25_161000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "spatial_foos", "foos"
 end

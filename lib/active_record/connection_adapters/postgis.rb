@@ -16,6 +16,7 @@ require_relative "postgis/column_methods"
 require_relative "postgis/schema_statements"
 require_relative "postgis/spatial_column_type"
 require_relative "postgis/adapter_extensions"
+require_relative "../../arel/visitors/postgis"
 
 module ActiveRecord
   module ConnectionAdapters
@@ -25,7 +26,7 @@ module ActiveRecord
 
       SPATIAL_TYPES_FOR_REGISTRATION = %i[
         st_geography st_geometry st_geometry_collection st_line_string st_multi_line_string
-        st_multi_point st_multi_polygon st_point st_polygon
+        st_multi_point st_multi_polygon st_point st_polygon line_string
       ].freeze
 
       SPATIAL_OPTIONS_FOR_REGISTRATION = %i[srid has_z has_m geographic].freeze
@@ -54,11 +55,25 @@ module ActiveRecord
         PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:st_point] = { name: "geometry(Point)" }
         PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:st_polygon] = { name: "geometry(Polygon)" }
 
+        # Legacy aliases for compatibility with activerecord-postgis-adapter
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:geography] = { name: "geography" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:geometry] = { name: "geometry" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:geometry_collection] = { name: "geometry(GeometryCollection)" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:line_string] = { name: "geometry(LineString)" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:multi_line_string] = { name: "geometry(MultiLineString)" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:multi_point] = { name: "geometry(MultiPoint)" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:multi_polygon] = { name: "geometry(MultiPolygon)" }
+        PostgreSQLAdapter::NATIVE_DATABASE_TYPES[:polygon] = { name: "geometry(Polygon)" }
+
 
         # Tell Rails these are valid column methods for schema dumping - PostgreSQL only
         ActiveRecord::ConnectionAdapters::PostgreSQL::TableDefinition.send(:define_column_methods,
                                                                             :st_geography, :st_geometry, :st_geometry_collection, :st_line_string,
-                                                                            :st_multi_line_string, :st_multi_point, :st_multi_polygon, :st_point, :st_polygon, *SPATIAL_OPTIONS_FOR_REGISTRATION)
+                                                                            :st_multi_line_string, :st_multi_point, :st_multi_polygon, :st_point, :st_polygon,
+                                                                            # Legacy column methods for compatibility with activerecord-postgis-adapter
+                                                                            :geography, :geometry, :geometry_collection, :line_string,
+                                                                            :multi_line_string, :multi_point, :multi_polygon, :polygon,
+                                                                            *SPATIAL_OPTIONS_FOR_REGISTRATION)
 
         # prevent unknown OID warning and register PostGIS types
         ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.singleton_class.prepend(RegisterTypes)
@@ -69,9 +84,26 @@ module ActiveRecord
         # Register spatial types with ActiveRecord::Type - use st_* prefix to avoid conflicts
         adapter_name = :postgresql
 
-        SPATIAL_TYPES_FOR_REGISTRATION.each do |geo_type|
-          ActiveRecord::Type.register(geo_type, Type::Spatial, adapter: adapter_name)
-        end
+        # Register specific spatial types with their corresponding classes
+        ActiveRecord::Type.register(:st_geography, Type::Geography, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_geometry, Type::Geometry, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_geometry_collection, Type::GeometryCollection, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_line_string, Type::LineString, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_multi_line_string, Type::MultiLineString, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_multi_point, Type::MultiPoint, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_multi_polygon, Type::MultiPolygon, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_point, Type::Point, adapter: adapter_name)
+        ActiveRecord::Type.register(:st_polygon, Type::Polygon, adapter: adapter_name)
+
+        # Legacy type registrations for compatibility with activerecord-postgis-adapter
+        ActiveRecord::Type.register(:geography, Type::Geography, adapter: adapter_name)
+        ActiveRecord::Type.register(:geometry, Type::Geometry, adapter: adapter_name)
+        ActiveRecord::Type.register(:geometry_collection, Type::GeometryCollection, adapter: adapter_name)
+        ActiveRecord::Type.register(:line_string, Type::LineString, adapter: adapter_name)
+        ActiveRecord::Type.register(:multi_line_string, Type::MultiLineString, adapter: adapter_name)
+        ActiveRecord::Type.register(:multi_point, Type::MultiPoint, adapter: adapter_name)
+        ActiveRecord::Type.register(:multi_polygon, Type::MultiPolygon, adapter: adapter_name)
+        ActiveRecord::Type.register(:polygon, Type::Polygon, adapter: adapter_name)
 
         # Ignore PostGIS system tables in schema dumps - PostgreSQL specific
         ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaDumper.ignore_tables |= %w[
@@ -102,28 +134,54 @@ module ActiveRecord
         private
 
         def create_spatial_type_from_sql(sql_type)
+          # Extract SRID and dimensions from SQL type
+          srid = extract_srid_from_sql(sql_type)
+          # Check for dimension suffixes (e.g., PointZ, PointM, PointZM)
+          has_z = sql_type.match?(/\b\w+Z\b|\b\w+ZM\b/)
+          has_m = sql_type.match?(/\b\w+M\b|\b\w+ZM\b/)
+          geographic = sql_type.start_with?("geography")
           case sql_type
-          when /geography\(Point/i, /geometry\(Point/i
-            Type::Point.new
-          when /geography\(LineString/i, /geometry\(LineString/i
-            Type::LineString.new
-          when /geography\(Polygon/i, /geometry\(Polygon/i
-            Type::Polygon.new
-          when /geography\(MultiPoint/i, /geometry\(MultiPoint/i
-            Type::MultiPoint.new
-          when /geography\(MultiLineString/i, /geometry\(MultiLineString/i
-            Type::MultiLineString.new
-          when /geography\(MultiPolygon/i, /geometry\(MultiPolygon/i
-            Type::MultiPolygon.new
-          when /geography\(GeometryCollection/i, /geometry\(GeometryCollection/i
-            Type::GeometryCollection.new
+          when /geography\(Point/i
+            Type::Point.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(Point/i
+            Type::Point.new(srid: srid, has_z: has_z, has_m: has_m)
+          when /geography\(LineString/i
+            Type::LineString.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(LineString/i
+            Type::LineString.new(srid: srid, has_z: has_z, has_m: has_m)
+          when /geography\(Polygon/i
+            Type::Polygon.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(Polygon/i
+            Type::Polygon.new(srid: srid, has_z: has_z, has_m: has_m)
+          when /geography\(MultiPoint/i
+            Type::MultiPoint.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(MultiPoint/i
+            Type::MultiPoint.new(srid: srid, has_z: has_z, has_m: has_m)
+          when /geography\(MultiLineString/i
+            Type::MultiLineString.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(MultiLineString/i
+            Type::MultiLineString.new(srid: srid, has_z: has_z, has_m: has_m)
+          when /geography\(MultiPolygon/i
+            Type::MultiPolygon.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(MultiPolygon/i
+            Type::MultiPolygon.new(srid: srid, has_z: has_z, has_m: has_m, geographic: false)
+          when /geography\(GeometryCollection/i
+            Type::GeometryCollection.new(srid: srid, has_z: has_z, has_m: has_m, geographic: geographic)
+          when /geometry\(GeometryCollection/i
+            Type::GeometryCollection.new(srid: srid, has_z: has_z, has_m: has_m)
           when /geography/i
-            Type::Geography.new
+            Type::Geography.new(srid: srid, has_z: has_z, has_m: has_m)
           when /geometry/i
-            Type::Geometry.new
+            Type::Geometry.new(srid: srid, has_z: has_z, has_m: has_m)
           else
-            Type::Geometry.new
+            Type::Geometry.new(srid: srid, has_z: has_z, has_m: has_m)
           end
+        end
+
+        def extract_srid_from_sql(sql_type)
+          # Extract SRID from patterns like geometry(Point,3785) or geography(Point,4326)
+          match = sql_type.match(/,(\d+)\)/)
+          match ? match[1].to_i : 0
         end
       end
     end

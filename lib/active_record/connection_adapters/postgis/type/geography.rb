@@ -8,7 +8,7 @@ module ActiveRecord
       module Type
         class Geography < Spatial
           def initialize(srid: 4326, has_z: false, has_m: false)
-            super(geo_type: "geography", srid: srid, has_z: has_z, has_m: has_m)
+            super(geo_type: "geography", srid: srid, has_z: has_z, has_m: has_m, geographic: true)
           end
 
           def type

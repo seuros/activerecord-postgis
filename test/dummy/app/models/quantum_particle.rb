@@ -6,7 +6,7 @@ class QuantumParticle < ApplicationRecord
   self.abstract_class = true
 
   connects_to database: { writing: :sqlite, reading: :sqlite }
-  
+
   # Quantum particles in SQLite follow classical physics laws
   # No spatial extensions available - they exist in pure relational space
 end
