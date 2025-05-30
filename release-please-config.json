@@ -2,7 +2,8 @@
   "packages": {
     ".": {
       "release-type": "ruby",
-      "package-name": "activerecord-postgis"
+      "package-name": "activerecord-postgis",
+      "version-file": "lib/activerecord/connection_adapters/postgis/version.rb"
     }
   }
 }
