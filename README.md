@@ -1,5 +1,10 @@
 # ActiveRecord::PostGIS
 
+[![CI](https://github.com/seuros/activerecord-postgis/actions/workflows/ci.yml/badge.svg)](https://github.com/seuros/activerecord-postgis/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/seuros/activerecord-postgis/branch/master/graph/badge.svg)](https://codecov.io/gh/seuros/activerecord-postgis)
+[![Coverage Status](https://coveralls.io/repos/github/seuros/activerecord-postgis/badge.svg?branch=master)](https://coveralls.io/github/seuros/activerecord-postgis?branch=master)
+[![Gem Version](https://badge.fury.io/rb/activerecord-postgis.svg)](https://badge.fury.io/rb/activerecord-postgis)
+
 **The next-generation PostGIS adapter for Rails** - clean, modern, and built for the future.
 
 ## Why This Gem?
@@ -248,6 +253,40 @@ end
 - Clear error messages and debugging
 - Full RGeo integration
 - Comprehensive test helpers for spatial assertions
+
+## Development
+
+### Running Tests
+
+The test suite requires PostgreSQL with PostGIS extension:
+
+```bash
+# Using Docker (recommended)
+make up        # Start PostGIS database
+bin/rails test # Run all tests
+make down      # Stop database
+
+# With coverage
+COVERAGE=true bin/rails test
+```
+
+### Test Coverage
+
+The project maintains **86.11% test coverage** with comprehensive testing across all components:
+
+- **Spatial Types**: All PostGIS geometry and geography types
+- **Schema Operations**: Migrations, introspection, and dumping  
+- **Query Support**: Spatial queries, joins, and constraints
+- **Edge Cases**: Empty sql_type handling, SRID mismatches, 3D/4D geometries
+
+Coverage reports are generated in both HTML and LCOV formats for CI integration.
+
+### Code Quality
+
+- **RuboCop**: Enforces code style and best practices
+- **SimpleCov**: Tracks test coverage with 80% minimum threshold
+- **CI Matrix**: Tests across Ruby 3.2-3.4 and Rails 7.1-8.0
+- **PostGIS Integration**: Real database testing with spatial queries
 
 ## Acknowledgments
 

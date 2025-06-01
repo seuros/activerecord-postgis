@@ -15,3 +15,7 @@ gem "rails", "~> 8.0.0"
 gem "sqlite3", "~> 2.0"
 
 gem "ruby-lsp", "~> 0.23.23", group: :development
+
+# Code coverage analysis
+gem "simplecov", require: false, group: :test
+gem "simplecov-lcov", require: false, group: :test
