@@ -22,6 +22,36 @@ module ActiveRecord
           assert_equal [ "Polygon", 4326, true, true, true ], parse_sql_type("geography(PolygonZM)")
         end
 
+        def test_parse_all_geometry_types
+          # Test all supported PostGIS geometry types
+          assert_equal [ "LineString", 0, false, false, false ], parse_sql_type("geometry(LineString)")
+          assert_equal [ "MultiPoint", 0, false, false, false ], parse_sql_type("geometry(MultiPoint)")
+          assert_equal [ "MultiLineString", 0, false, false, false ], parse_sql_type("geometry(MultiLineString)")
+          assert_equal [ "MultiPolygon", 0, false, false, false ], parse_sql_type("geometry(MultiPolygon)")
+          assert_equal [ "GeometryCollection", 0, false, false, false ], parse_sql_type("geometry(GeometryCollection)")
+
+          # Test with SRID
+          assert_equal [ "LineString", 3785, false, false, false ], parse_sql_type("geometry(LineString,3785)")
+          assert_equal [ "MultiPoint", 4326, false, false, false ], parse_sql_type("geometry(MultiPoint,4326)")
+
+          # Test with dimensions
+          assert_equal [ "LineString", 0, true, false, false ], parse_sql_type("geometry(LineStringZ)")
+          assert_equal [ "MultiPoint", 0, false, true, false ], parse_sql_type("geometry(MultiPointM)")
+          assert_equal [ "MultiPolygon", 0, true, true, false ], parse_sql_type("geometry(MultiPolygonZM)")
+        end
+
+        def test_parse_geography_types
+          # Test geography variants of all types
+          assert_equal [ "LineString", 4326, false, false, true ], parse_sql_type("geography(LineString)")
+          assert_equal [ "MultiPoint", 4326, false, false, true ], parse_sql_type("geography(MultiPoint)")
+          assert_equal [ "MultiLineString", 4326, false, false, true ], parse_sql_type("geography(MultiLineString)")
+          assert_equal [ "MultiPolygon", 4326, false, false, true ], parse_sql_type("geography(MultiPolygon)")
+          assert_equal [ "GeometryCollection", 4326, false, false, true ], parse_sql_type("geography(GeometryCollection)")
+
+          # Test geography with custom SRID (though 4326 is standard)
+          assert_equal [ "Point", 4269, false, false, true ], parse_sql_type("geography(Point,4269)")
+        end
+
         def test_parse_type_with_srid
           assert_equal [ "Point", 4326, false, false, true ], parse_sql_type("geography(Point,4326)")
           assert_equal [ "Polygon", 4327, true, false, true ], parse_sql_type("geography(PolygonZ,4327)")
@@ -52,12 +82,12 @@ module ActiveRecord
 
           # Should return empty string as type name with safe defaults
           assert_equal [ "", 0, false, false, false ], result
-          
+
           # Test that our adapter creates a safe fallback type for empty sql_type
           connection = SpatialModel.lease_connection
           if connection.respond_to?(:create_spatial_type_from_sql, true)
             type = connection.send(:create_spatial_type_from_sql, "")
-            
+
             # Should create a default Geometry type with safe properties
             assert_equal ActiveRecord::ConnectionAdapters::PostGIS::Type::Geometry, type.class
             assert_equal 0, type.instance_variable_get(:@srid)
@@ -67,32 +97,75 @@ module ActiveRecord
           end
         end
 
+        def test_edge_cases_and_malformed_sql_types
+          # Test various edge cases that might occur in real-world scenarios
+
+          # Malformed but parseable patterns
+          assert_equal [ "POINT", 0, false, false, false ], parse_sql_type("geometry(POINT)")  # uppercase
+          assert_equal [ "point", 0, false, false, false ], parse_sql_type("geometry(point)")  # lowercase
+
+          # Missing closing parenthesis (should be treated as non-spatial)
+          assert_equal [ "geometry(Point", 0, false, false, false ], parse_sql_type("geometry(Point")
+
+          # Invalid SRID (should default to 0 but preserve the malformed input)
+          assert_equal [ "geometry(Point,abc)", 0, false, false, false ], parse_sql_type("geometry(Point,abc)")
+
+          # Extra spaces (PostgreSQL might include these)
+          assert_equal [ "Point", 4326, false, false, true ], parse_sql_type("geography( Point , 4326 )")
+
+          # Nil input (should be handled gracefully)
+          assert_equal [ "", 0, false, false, false ], parse_sql_type(nil)
+        end
+
+        def test_case_insensitive_parsing
+          # PostGIS types should be case-insensitive
+          assert_equal [ "POINT", 0, false, false, false ], parse_sql_type("GEOMETRY(POINT)")
+          assert_equal [ "LINESTRING", 4326, false, false, true ], parse_sql_type("GEOGRAPHY(LINESTRING)")
+          assert_equal [ "multipolygon", 0, false, false, false ], parse_sql_type("geometry(multipolygon)")
+        end
+
+        def test_real_world_srid_values
+          # Test with commonly used SRID values
+          assert_equal [ "Point", 4326, false, false, true ], parse_sql_type("geography(Point,4326)")  # WGS84
+          assert_equal [ "Point", 3857, false, false, false ], parse_sql_type("geometry(Point,3857)")  # Web Mercator
+          assert_equal [ "Point", 4269, false, false, false ], parse_sql_type("geometry(Point,4269)")  # NAD83
+          assert_equal [ "Point", 2154, false, false, false ], parse_sql_type("geometry(Point,2154)")  # RGF93 / Lambert-93
+
+          # Zero SRID (unspecified)
+          assert_equal [ "Point", 0, false, false, false ], parse_sql_type("geometry(Point,0)")
+        end
+
         private
 
         # Test our SQL type parsing logic using our adapter's implementation
         def parse_sql_type(sql_type)
-          # Extract the type name, SRID, dimensions, and geographic flag
-          geographic = sql_type.start_with?("geography")
+          # Handle nil input
+          return [ "", 0, false, false, false ] if sql_type.nil? || sql_type.empty?
 
-          if sql_type =~ /^(geography|geometry)\(([^,)]+)(?:,(\d+))?\)$/
-            geo_type = $2
+          # Normalize input by stripping spaces and converting to lowercase for comparison
+          normalized_type = sql_type.strip
+          geographic = normalized_type.downcase.start_with?("geography")
+
+          # Handle extra spaces in parentheses
+          if normalized_type =~ /^(geography|geometry)\s*\(\s*([^,)]+)\s*(?:,\s*(\d+))?\s*\)$/i
+            geo_type = $2.strip
             srid = $3 ? $3.to_i : (geographic ? 4326 : 0)
 
             # Check for dimension suffixes (Z, M, ZM at the end)
-            has_z = geo_type.match?(/\b\w+Z\b|\b\w+ZM\b/)
-            has_m = geo_type.match?(/\b\w+M\b|\b\w+ZM\b/)
+            has_z = geo_type.match?(/\b\w+Z\b|\b\w+ZM\b/i)
+            has_m = geo_type.match?(/\b\w+M\b|\b\w+ZM\b/i)
 
             # Clean up the geo type name
-            clean_geo_type = geo_type.gsub(/[ZM]+$/, "")
+            clean_geo_type = geo_type.gsub(/[ZM]+$/i, "")
 
             [ clean_geo_type, srid, has_z, has_m, geographic ]
-          elsif sql_type == "geography"
+          elsif normalized_type.downcase == "geography"
             [ "geography", 4326, false, false, true ]
-          elsif sql_type == "geometry"
+          elsif normalized_type.downcase == "geometry"
             [ "geometry", 0, false, false, false ]
           else
-            # Non-spatial type
-            [ sql_type, 0, false, false, false ]
+            # Non-spatial type or malformed input
+            [ normalized_type, 0, false, false, false ]
           end
         end
       end
