@@ -135,6 +135,56 @@ module ActiveRecord
           assert_equal [ "Point", 0, false, false, false ], parse_sql_type("geometry(Point,0)")
         end
 
+        def test_performance_of_type_parsing
+          # Ensure our type parsing is reasonably fast for high-frequency operations
+          sql_types = [
+            "geometry(Point,4326)",
+            "geography(Polygon,4326)", 
+            "geometry(LineStringZ,3857)",
+            "geography(MultiPointM,4269)",
+            "geometry(GeometryCollectionZM,2154)",
+            "", # empty sql_type case
+            "geometry", # simple geometry
+            "geography" # simple geography
+          ]
+
+          start_time = Time.now
+          1000.times do
+            sql_types.each { |sql_type| parse_sql_type(sql_type) }
+          end
+          elapsed = Time.now - start_time
+
+          # Should parse 8000 type strings in reasonable time (< 1 second)
+          assert elapsed < 1.0, "Type parsing took #{elapsed}s for 8000 operations, should be < 1s"
+        end
+
+        def test_type_registry_performance
+          # Test that our adapter's type creation is reasonably fast
+          connection = SpatialModel.lease_connection
+          unless connection.respond_to?(:create_spatial_type_from_sql, true)
+            assert true, "Skipping test - adapter doesn't support create_spatial_type_from_sql"
+            return
+          end
+
+          sql_types = [
+            "geometry(Point,4326)",
+            "geography(Polygon,4326)",
+            "geometry(LineString,3857)",
+            "",  # empty sql_type
+            "geometry",
+            "geography"
+          ]
+
+          start_time = Time.now
+          1000.times do
+            sql_types.each { |sql_type| connection.send(:create_spatial_type_from_sql, sql_type) }
+          end
+          elapsed = Time.now - start_time
+
+          # Should create 6000 types in reasonable time (< 2 seconds)
+          assert elapsed < 2.0, "Type creation took #{elapsed}s for 6000 operations, should be < 2s"
+        end
+
         private
 
         # Test our SQL type parsing logic using our adapter's implementation
