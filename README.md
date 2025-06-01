@@ -139,6 +139,90 @@ puts location.coordinates.x  # -5.923647
 puts location.coordinates.y  # 35.790897
 ```
 
+## Testing
+
+When testing spatial functionality in your Rails application, this gem provides helpful test utilities:
+
+```ruby
+# In your test_helper.rb or rails_helper.rb
+require 'activerecord-postgis/test_helper'
+
+class ActiveSupport::TestCase
+  include ActiveRecordPostgis::TestHelper
+end
+
+# Or for RSpec
+RSpec.configure do |config|
+  config.include ActiveRecordPostgis::TestHelper
+end
+```
+
+### Test Helper Methods
+
+```ruby
+class LocationTest < ActiveSupport::TestCase
+  def test_spatial_operations
+    # Create test geometries
+    point1 = create_point(-5.9, 35.8)
+    point2 = create_point(-5.91, 35.81)
+    polygon = create_test_polygon
+    
+    location = Location.create!(coordinates: point1, boundary: polygon)
+    
+    # Traditional assertions
+    assert_spatial_equal point1, location.coordinates
+    assert_within_distance point1, point2, 200  # meters
+    assert_contains polygon, point1
+    
+    # New chainable syntax (recommended)
+    assert_spatial_column(location.coordinates)
+      .has_srid(4326)
+      .is_type(:point)
+      .is_geographic
+      
+    assert_spatial_column(location.boundary)
+      .is_type(:polygon)
+      .has_srid(4326)
+  end
+  
+  def test_3d_geometry
+    point_3d = create_point(1.0, 2.0, srid: 4326, z: 10.0)
+    
+    assert_spatial_column(point_3d)
+      .has_z
+      .has_srid(4326)
+      .is_type(:point)
+      .is_cartesian
+  end
+end
+```
+
+**Available Test Helpers:**
+
+**Traditional Assertions:**
+- `assert_spatial_equal(expected, actual)` - Assert spatial objects are equal
+- `assert_within_distance(point1, point2, distance)` - Assert points within distance
+- `assert_contains(container, contained)` - Assert geometry contains another
+- `assert_within(inner, outer)` - Assert geometry is within another
+- `assert_intersects(geom1, geom2)` - Assert geometries intersect
+- `assert_disjoint(geom1, geom2)` - Assert geometries don't intersect
+
+**Chainable Spatial Column Assertions:**
+- `assert_spatial_column(geometry).has_z` - Assert has Z dimension
+- `assert_spatial_column(geometry).has_m` - Assert has M dimension
+- `assert_spatial_column(geometry).has_srid(srid)` - Assert SRID value
+- `assert_spatial_column(geometry).is_type(type)` - Assert geometry type
+- `assert_spatial_column(geometry).is_geographic` - Assert geographic factory
+- `assert_spatial_column(geometry).is_cartesian` - Assert cartesian factory
+
+**Geometry Factories:**
+- `create_point(x, y, srid: 4326)` - Create test points
+- `create_test_polygon(srid: 4326)` - Create test polygons  
+- `create_test_linestring(srid: 4326)` - Create test linestrings
+- `factory(srid: 4326, geographic: false)` - Get geometry factory
+- `geographic_factory(srid: 4326)` - Get geographic factory
+- `cartesian_factory(srid: 0)` - Get cartesian factory
+
 ## Features
 
 🌍 **Complete PostGIS Type Support**
@@ -163,6 +247,7 @@ puts location.coordinates.y  # 35.790897
 - Works with existing PostgreSQL tools
 - Clear error messages and debugging
 - Full RGeo integration
+- Comprehensive test helpers for spatial assertions
 
 ## Acknowledgments
 

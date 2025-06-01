@@ -40,8 +40,8 @@ class BasicTest < ActiveSupport::TestCase
     create_model
     obj = SpatialModel.new
     assert_nil obj.latlon
-    obj.latlon = factory.point(1.0, 2.0)
-    assert_equal factory.point(1.0, 2.0), obj.latlon
+    obj.latlon = factory(srid: 3785).point(1.0, 2.0)
+    assert_equal factory(srid: 3785).point(1.0, 2.0), obj.latlon
     assert_equal 3785, obj.latlon.srid
   end
 
@@ -50,18 +50,18 @@ class BasicTest < ActiveSupport::TestCase
     obj = SpatialModel.new
     assert_nil obj.latlon
     obj.latlon = "POINT(1 2)"
-    assert_equal factory.point(1.0, 2.0), obj.latlon
+    assert_equal factory(srid: 3785).point(1.0, 2.0), obj.latlon
     assert_equal 3785, obj.latlon.srid
   end
 
   def test_save_and_load_point
     create_model
     obj = SpatialModel.new
-    obj.latlon = factory.point(1.0, 2.0)
+    obj.latlon = factory(srid: 3785).point(1.0, 2.0)
     obj.save!
     id = obj.id
     obj2 = SpatialModel.find(id)
-    assert_equal factory.point(1.0, 2.0), obj2.latlon
+    assert_equal factory(srid: 3785).point(1.0, 2.0), obj2.latlon
     assert_equal 3785, obj2.latlon.srid
   end
 
@@ -85,7 +85,7 @@ class BasicTest < ActiveSupport::TestCase
     obj.save!
     id = obj.id
     obj2 = SpatialModel.find(id)
-    assert_equal factory.point(1.0, 2.0), obj2.latlon
+    assert_equal factory(srid: 3785).point(1.0, 2.0), obj2.latlon
     assert_equal 3785, obj2.latlon.srid
   end
 
@@ -179,7 +179,7 @@ class BasicTest < ActiveSupport::TestCase
     create_model
     obj = SpatialModel.new
     assert_match(/"latlon":null/, obj.to_json)
-    obj.latlon = factory.point(1.0, 2.0)
+    obj.latlon = factory(srid: 3785).point(1.0, 2.0)
     assert_match(/"latlon":"POINT\s\(1(\.0)?\s2(\.0)?\)"/, obj.to_json)
   end
 
