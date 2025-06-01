@@ -139,7 +139,7 @@ module ActiveRecord
           # Ensure our type parsing is reasonably fast for high-frequency operations
           sql_types = [
             "geometry(Point,4326)",
-            "geography(Polygon,4326)", 
+            "geography(Polygon,4326)",
             "geometry(LineStringZ,3857)",
             "geography(MultiPointM,4269)",
             "geometry(GeometryCollectionZM,2154)",
@@ -183,6 +183,50 @@ module ActiveRecord
 
           # Should create 6000 types in reasonable time (< 2 seconds)
           assert elapsed < 2.0, "Type creation took #{elapsed}s for 6000 operations, should be < 2s"
+        end
+
+        def test_3d_and_4d_geometry_types
+          # Test support for 3D (Z) and 4D (ZM) geometries
+
+          # 3D Point (PointZ)
+          assert_equal [ "Point", 4326, true, false, true ], parse_sql_type("geography(PointZ,4326)")
+          assert_equal [ "Point", 3857, true, false, false ], parse_sql_type("geometry(PointZ,3857)")
+
+          # 4D Point (PointZM)
+          assert_equal [ "Point", 4326, true, true, true ], parse_sql_type("geography(PointZM,4326)")
+          assert_equal [ "Point", 0, true, true, false ], parse_sql_type("geometry(PointZM)")
+
+          # Measured geometries (PointM)
+          assert_equal [ "Point", 4326, false, true, true ], parse_sql_type("geography(PointM,4326)")
+          assert_equal [ "LineString", 0, false, true, false ], parse_sql_type("geometry(LineStringM)")
+
+          # Complex 3D/4D types
+          assert_equal [ "Polygon", 4326, true, false, true ], parse_sql_type("geography(PolygonZ,4326)")
+          assert_equal [ "MultiPolygon", 3857, true, true, false ], parse_sql_type("geometry(MultiPolygonZM,3857)")
+          assert_equal [ "GeometryCollection", 0, false, true, false ], parse_sql_type("geometry(GeometryCollectionM)")
+        end
+
+        def test_raster_type_support
+          # Test that we gracefully handle PostGIS raster types
+          # These should be treated as non-spatial for our adapter
+
+          assert_equal [ "raster", 0, false, false, false ], parse_sql_type("raster")
+          assert_equal [ "raster[]", 0, false, false, false ], parse_sql_type("raster[]")
+        end
+
+        def test_topology_type_support
+          # Test PostGIS topology types (if supported)
+          topology_types = %w[topogeometry topology.topogeometry]
+
+          topology_types.each do |type|
+            result = parse_sql_type(type)
+            # Should handle gracefully without crashing
+            assert_equal type, result[0]
+            assert_equal 0, result[1]
+            assert_equal false, result[2]
+            assert_equal false, result[3]
+            assert_equal false, result[4]
+          end
         end
 
         private
