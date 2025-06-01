@@ -36,6 +36,37 @@ module ActiveRecord
           assert_equal [ "foo(A,1234)", 0, false, false, false ], parse_sql_type("foo(A,1234)")
         end
 
+        def test_parse_empty_sql_type
+          # Test the edge case where sql_type comes back as empty string after joins
+          # This should return defaults but not crash
+          assert_equal [ "", 0, false, false, false ], parse_sql_type("")
+        end
+
+        def test_empty_sql_type_creates_default_geometry_type
+          # Test that empty sql_type (which can happen in joins) doesn't crash
+          # This tests the specific join scenario where Rails returns empty sql_type
+          # and verifies our adapter handles it gracefully with explicit defaults
+
+          # When sql_type is empty (from joins), parsing should not crash
+          result = parse_sql_type("")
+
+          # Should return empty string as type name with safe defaults
+          assert_equal [ "", 0, false, false, false ], result
+          
+          # Test that our adapter creates a safe fallback type for empty sql_type
+          connection = SpatialModel.lease_connection
+          if connection.respond_to?(:create_spatial_type_from_sql, true)
+            type = connection.send(:create_spatial_type_from_sql, "")
+            
+            # Should create a default Geometry type with safe properties
+            assert_equal ActiveRecord::ConnectionAdapters::PostGIS::Type::Geometry, type.class
+            assert_equal 0, type.instance_variable_get(:@srid)
+            assert_equal false, type.instance_variable_get(:@has_z)
+            assert_equal false, type.instance_variable_get(:@has_m)
+            assert_equal false, type.instance_variable_get(:@geographic)
+          end
+        end
+
         private
 
         # Test our SQL type parsing logic using our adapter's implementation

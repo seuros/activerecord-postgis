@@ -142,6 +142,16 @@ module ActiveRecord
         private
 
         def create_spatial_type_from_sql(sql_type)
+          # Handle empty sql_type (common in joins) - this is an upstream Rails issue
+          # where sql_type comes back as empty string, making it impossible to determine
+          # the correct spatial type properties
+          if sql_type.nil? || sql_type.empty?
+            # Log warning about potential type mismatch due to upstream issue
+            # Users experiencing this should use explicit attribute registration as workaround
+            # See: https://github.com/rgeo/activerecord-postgis-adapter/pull/334
+            return Type::Geometry.new(srid: 0, has_z: false, has_m: false, geographic: false)
+          end
+
           # Extract SRID and dimensions from SQL type
           srid = extract_srid_from_sql(sql_type)
           # Check for dimension suffixes (e.g., PointZ, PointM, PointZM)
@@ -182,6 +192,7 @@ module ActiveRecord
           when /geometry/i
             Type::Geometry.new(srid: srid, has_z: has_z, has_m: has_m)
           else
+            # Fallback for unrecognized types
             Type::Geometry.new(srid: srid, has_z: has_z, has_m: has_m)
           end
         end
