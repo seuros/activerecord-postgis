@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.2.0...activerecord-postgis/v0.2.1) (2025-06-01)
+
+
+### Bug Fixes
+
+* add test helper ([ac60c3b](https://github.com/seuros/activerecord-postgis/commit/ac60c3bfdc68c20f75cc608ea5e1eace9fafd460))
+* handle empty sql_type in joins gracefully with explicit fallback ([1a7ffa7](https://github.com/seuros/activerecord-postgis/commit/1a7ffa75a106335e089953706bb82f1b13fd0a26))
+
 ## [0.2.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis-v0.1.0...activerecord-postgis/v0.2.0) (2025-05-30)
 
 
