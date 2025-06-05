@@ -74,7 +74,8 @@ class BasicTest < ActiveSupport::TestCase
     obj.save!
     id = obj.id
     obj2 = SpatialModel.find(id)
-    assert_equal geographic_factory.point(1.0, 2.0), obj2.latlon_geo
+    # Use spatial equality instead of object equality since factories may differ
+    assert_spatial_equal geographic_factory.point(1.0, 2.0), obj2.latlon_geo
     assert_equal 4326, obj2.latlon_geo.srid
   end
 

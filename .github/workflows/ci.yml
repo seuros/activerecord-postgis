@@ -35,6 +35,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install GEOS and PROJ libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgeos-dev libgeos++-dev libproj-dev
+
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:

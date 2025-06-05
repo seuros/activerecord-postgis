@@ -131,8 +131,19 @@ module ActiveRecord
 
         def test_geo_safe_where_with_srids
           create_model
-          center = RGeo::Geos.factory(srid: 4326).point(3.833, 43.698)
-          polygon = RGeo::Geos.factory(srid: 4326).parse_wkt("POLYGON ((3.9 43.68, 3.8 43.62, 3.77 43.75, 3.9 43.68))")
+          # Use factory method that works with or without GEOS
+          factory = RGeo::Geographic.spherical_factory(srid: 4326)
+          center = factory.point(3.833, 43.698)
+
+          # Create polygon using linear ring
+          ring = factory.linear_ring([
+            factory.point(3.9, 43.68),
+            factory.point(3.8, 43.62),
+            factory.point(3.77, 43.75),
+            factory.point(3.9, 43.68)
+          ])
+          polygon = factory.polygon(ring)
+
           SpatialModel.create!(polygon: polygon)
           assert_equal 1, SpatialModel.where("ST_Within(?, polygon)", center).count
         end

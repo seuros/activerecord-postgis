@@ -9,18 +9,38 @@ module ActiveRecordPostgis
     # Additional convenience methods for PostGIS testing
     def factory(srid: 4326, geographic: false)
       if geographic
-        RGeo::Geographic.spherical_factory(srid: srid)
+        # Try to use GEOS-enabled geographic factory if available
+        begin
+          RGeo::Geos.factory(srid: srid, uses_lenient_assertions: true)
+        rescue
+          RGeo::Geographic.spherical_factory(srid: srid)
+        end
       else
-        RGeo::Cartesian.preferred_factory(srid: srid)
+        # Try to use GEOS factory if available for better spatial predicate support
+        begin
+          RGeo::Geos.factory(srid: srid)
+        rescue
+          RGeo::Cartesian.preferred_factory(srid: srid)
+        end
       end
     end
 
     def geographic_factory(srid: 4326)
-      RGeo::Geographic.spherical_factory(srid: srid)
+      # Try to use GEOS-enabled geographic factory if available
+      begin
+        RGeo::Geos.factory(srid: srid, uses_lenient_assertions: true)
+      rescue
+        RGeo::Geographic.spherical_factory(srid: srid)
+      end
     end
 
     def cartesian_factory(srid: 0)
-      RGeo::Cartesian.preferred_factory(srid: srid)
+      # Try to use GEOS factory if available
+      begin
+        RGeo::Geos.factory(srid: srid)
+      rescue
+        RGeo::Cartesian.preferred_factory(srid: srid)
+      end
     end
 
     def spatial_factory_store
