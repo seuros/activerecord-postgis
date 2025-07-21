@@ -93,22 +93,36 @@ parks_in_city = Park.where(
 )
 ```
 
-**With Arel Spatial Methods**:
+**With Arel Spatial Methods** (Now with expanded arsenal!):
 
 ```ruby
-# Find locations within distance
+# Basic spatial queries
 Location.where(
   Location.arel_table[:coordinates].st_distance(point).lt(1000)
 )
 
-# Find polygons that contain a point
-Boundary.where(
-  Boundary.arel_table[:area].st_contains(Arel.spatial(point))
+# NEW: Advanced spatial predicates
+# Find intersecting routes
+Route.where(Route.arel_table[:path].st_intersects(restricted_zone))
+
+# Find points within efficient distance (uses spatial index!)
+Location.where(
+  Location.arel_table[:coordinates].st_dwithin(headquarters, 5000)
 )
 
-# Calculate lengths and areas
-Route.select(
-  Route.arel_table[:path].st_length.as('distance')
+# Create buffer zones
+safe_zones = DangerZone.select(
+  DangerZone.arel_table[:area].st_buffer(100).as('safety_perimeter')
+)
+
+# Transform between coordinate systems
+global_coords = Location.select(
+  Location.arel_table[:local_position].st_transform(4326).as('wgs84_position')
+)
+
+# Calculate areas
+territories = Region.select(
+  Region.arel_table[:boundary].st_area.as('territory_size')
 )
 ```
 
@@ -223,6 +237,13 @@ end
 - `geographic_factory(srid: 4326)` - Get geographic factory
 - `cartesian_factory(srid: 0)` - Get cartesian factory
 
+## Documentation
+
+📚 **Learn Like You're Defending the Galaxy**
+
+- [🚀 Spatial Warfare Manual](docs/SPATIAL_WARFARE.md) - Advanced PostGIS arsenal explained through space combat
+- [🍳 The PostGIS Cookbook](docs/COOKBOOK.md) - Real-world recipes from delivery fleets to geofencing
+
 ## Features
 
 🌍 **Complete PostGIS Type Support**
@@ -232,7 +253,13 @@ end
 - Support for SRID, Z/M dimensions
 
 🔍 **Spatial Query Methods**
-- `st_distance`, `st_contains`, `st_within`, `st_length`
+- Core methods: `st_distance`, `st_contains`, `st_within`, `st_length`
+- **NEW:** Advanced spatial operations:
+  - `st_intersects` - Detect geometry intersections
+  - `st_dwithin` - Efficient proximity queries (index-optimized!)
+  - `st_buffer` - Create buffer zones around geometries
+  - `st_transform` - Convert between coordinate systems
+  - `st_area` - Calculate polygon areas
 - Custom Arel visitor for PostGIS SQL generation
 - Seamless integration with ActiveRecord queries
 
