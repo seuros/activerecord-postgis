@@ -32,6 +32,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install GEOS library
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgeos-dev
+
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
