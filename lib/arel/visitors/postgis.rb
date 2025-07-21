@@ -36,6 +36,13 @@ module Arel
       end
     end
     class SpatialArea < Unary; end
+    
+    # K-Nearest Neighbor distance operator
+    class SpatialDistanceOperator < Binary
+      def initialize(left, right)
+        super
+      end
+    end
 
     # Wrapper for spatial values that need special handling
     class SpatialValue < Node
@@ -76,6 +83,12 @@ module Arel
       def st_area
         SpatialArea.new(self)
       end
+      
+      def distance_operator(other)
+        SpatialDistanceOperator.new(self, other)
+      end
+      
+      alias :'<->' :distance_operator
     end
   end
 
@@ -116,6 +129,12 @@ module Arel
       def st_area
         Arel::Nodes::SpatialArea.new(self)
       end
+      
+      def distance_operator(other)
+        Arel::Nodes::SpatialDistanceOperator.new(self, other)
+      end
+      
+      alias :'<->' :distance_operator
     end
   end
 
@@ -210,6 +229,12 @@ module Arel
         collector << "ST_Area("
         visit(node.expr, collector)
         collector << ")"
+      end
+      
+      def visit_Arel_Nodes_SpatialDistanceOperator(node, collector)
+        visit(node.left, collector)
+        collector << " <-> "
+        visit_spatial_operand(node.right, collector)
       end
 
       private
