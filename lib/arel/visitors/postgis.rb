@@ -16,6 +16,26 @@ module Arel
     class SpatialLength < Unary; end
     class SpatialContains < SpatialNode; end
     class SpatialWithin < SpatialNode; end
+    class SpatialIntersects < SpatialNode; end
+    class SpatialDWithin < SpatialNode
+      attr_reader :distance
+      
+      def initialize(left, right, distance)
+        super(left, right)
+        @distance = distance
+      end
+    end
+    class SpatialBuffer < SpatialNode
+      def st_area
+        SpatialArea.new(self)
+      end
+    end
+    class SpatialTransform < SpatialNode
+      def st_area
+        SpatialArea.new(self)
+      end
+    end
+    class SpatialArea < Unary; end
 
     # Wrapper for spatial values that need special handling
     class SpatialValue < Node
@@ -36,6 +56,26 @@ module Arel
       def st_within(other)
         SpatialWithin.new(self, other)
       end
+
+      def st_intersects(other)
+        SpatialIntersects.new(self, other)
+      end
+
+      def st_dwithin(other, distance)
+        SpatialDWithin.new(self, other, distance)
+      end
+
+      def st_buffer(distance)
+        SpatialBuffer.new(self, distance)
+      end
+
+      def st_transform(srid)
+        SpatialTransform.new(self, srid)
+      end
+
+      def st_area
+        SpatialArea.new(self)
+      end
     end
   end
 
@@ -55,6 +95,26 @@ module Arel
 
       def st_within(other)
         Arel::Nodes::SpatialWithin.new(self, other)
+      end
+
+      def st_intersects(other)
+        Arel::Nodes::SpatialIntersects.new(self, other)
+      end
+
+      def st_dwithin(other, distance)
+        Arel::Nodes::SpatialDWithin.new(self, other, distance)
+      end
+
+      def st_buffer(distance)
+        Arel::Nodes::SpatialBuffer.new(self, distance)
+      end
+
+      def st_transform(srid)
+        Arel::Nodes::SpatialTransform.new(self, srid)
+      end
+
+      def st_area
+        Arel::Nodes::SpatialArea.new(self)
       end
     end
   end
@@ -110,6 +170,46 @@ module Arel
 
       def visit_Arel_Nodes_SpatialValue(node, collector)
         visit_spatial_operand(node.value, collector)
+      end
+
+      def visit_Arel_Nodes_SpatialIntersects(node, collector)
+        collector << "ST_Intersects("
+        visit(node.left, collector)
+        collector << ", "
+        visit_spatial_operand(node.right, collector)
+        collector << ")"
+      end
+
+      def visit_Arel_Nodes_SpatialDWithin(node, collector)
+        collector << "ST_DWithin("
+        visit(node.left, collector)
+        collector << ", "
+        visit_spatial_operand(node.right, collector)
+        collector << ", "
+        collector << node.distance.to_s
+        collector << ")"
+      end
+
+      def visit_Arel_Nodes_SpatialBuffer(node, collector)
+        collector << "ST_Buffer("
+        visit(node.left, collector)
+        collector << ", "
+        collector << node.right.to_s
+        collector << ")"
+      end
+
+      def visit_Arel_Nodes_SpatialTransform(node, collector)
+        collector << "ST_Transform("
+        visit(node.left, collector)
+        collector << ", "
+        collector << node.right.to_s
+        collector << ")"
+      end
+
+      def visit_Arel_Nodes_SpatialArea(node, collector)
+        collector << "ST_Area("
+        visit(node.expr, collector)
+        collector << ")"
       end
 
       private
