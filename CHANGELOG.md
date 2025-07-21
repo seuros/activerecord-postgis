@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.3.0...activerecord-postgis/v0.3.1) (2025-07-21)
+
+
+### Bug Fixes
+
+* correct version file path in release-please config ([ae3b8ee](https://github.com/seuros/activerecord-postgis/commit/ae3b8ee28075e8993e11c859d3140b002e448b73))
+
 ## [0.3.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.2.0...activerecord-postgis/v0.3.0) (2025-07-21)
 
 
