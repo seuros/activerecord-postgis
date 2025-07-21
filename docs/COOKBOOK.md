@@ -16,6 +16,62 @@
 
 *Your starships are scattered across the galaxy like atoms in the void. Time to coordinate their movements with military precision.*
 
+### The Quantum Leap: K-Nearest Neighbor Search
+
+The `<->` operator is your secret weapon for finding the nearest anything at warp speed:
+
+```ruby
+# app/models/starship.rb
+class Starship < ApplicationRecord
+  # Find nearest starships using KNN (blazing fast with spatial index!)
+  scope :nearest_to, ->(position, limit = 10) {
+    order(arel_table[:current_coordinates].distance_operator(position))
+      .limit(limit)
+  }
+  
+  # Combine KNN with distance calculations when you need actual distances
+  scope :nearest_with_distances, ->(position, limit = 10) {
+    select(
+      "*",
+      "ST_Distance(current_coordinates, ST_GeomFromText('#{position.as_text}', 4326)) as distance_meters"
+    )
+    .order(arel_table[:current_coordinates].distance_operator(position))
+    .limit(limit)
+  }
+  
+  # Emergency protocols: Find nearest friendly ships
+  def nearest_allies(count = 5)
+    self.class
+      .where(faction: faction)
+      .where.not(id: id)
+      .order(
+        self.class.arel_table[:current_coordinates].distance_operator(current_coordinates)
+      )
+      .limit(count)
+  end
+  
+  # Tactical assessment: Nearest threats
+  def incoming_threats(scan_limit = 20)
+    HostileVessel
+      .active
+      .select(
+        "*",
+        "ST_Distance(position, ST_GeomFromText('#{current_coordinates.as_text}', 4326)) as threat_distance"
+      )
+      .order(
+        HostileVessel.arel_table[:position].distance_operator(current_coordinates)
+      )
+      .limit(scan_limit)
+      .having("threat_distance < ?", sensor_range)
+  end
+end
+
+# The Navigation AI notes:
+# "Traditional distance queries are like checking every star in the galaxy.
+#  The <-> operator is like having a sorted list already waiting for you.
+#  Always use <-> for 'find nearest' queries—your CPU will thank you."
+```
+
 ```ruby
 # app/models/starship.rb
 class Starship < ApplicationRecord

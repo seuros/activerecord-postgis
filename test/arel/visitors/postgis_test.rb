@@ -92,6 +92,38 @@ module Arel
         assert_sql_includes where_clause, "ST_DWithin"
         assert_sql_includes where_clause, "1000) = TRUE"
       end
+      
+      def test_knn_distance_operator
+        table = Arel::Table.new(:spatial_models)
+        query_point = factory(srid: 3785).point(1, 2)
+        
+        # Test the <-> operator
+        node = table[:location].distance_operator(query_point)
+        
+        assert_sql_includes node, '"spatial_models"."location" <-> ST_GeomFromEWKT'
+        assert_sql_includes node, "SRID=3785;POINT (1 2)"
+      end
+      
+      def test_knn_operator_alias
+        table = Arel::Table.new(:spatial_models)
+        query_point = factory(srid: 3785).point(1, 2)
+        
+        # Test the <-> alias
+        node = table[:location].send(:'<->', query_point)
+        
+        assert_sql_includes node, '"spatial_models"."location" <-> ST_GeomFromEWKT'
+      end
+      
+      def test_knn_in_order_clause
+        table = Arel::Table.new(:spatial_models)
+        query_point = factory(srid: 4326).point(-72.1, 42.1)
+        
+        # Simulate ORDER BY with KNN
+        order_node = table[:location].distance_operator(query_point).asc
+        
+        assert_sql_includes order_node, '<-> ST_GeomFromEWKT'
+        assert_sql_includes order_node, 'ASC'
+      end
 
       private
 

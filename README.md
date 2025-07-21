@@ -101,7 +101,13 @@ Location.where(
   Location.arel_table[:coordinates].st_distance(point).lt(1000)
 )
 
-# NEW: Advanced spatial predicates
+# NEW: K-Nearest Neighbor - Lightning fast "find nearest" queries
+# Uses spatial index for incredible performance!
+nearest_locations = Location
+  .order(Location.arel_table[:coordinates].distance_operator(my_position))
+  .limit(10)
+
+# Advanced spatial predicates
 # Find intersecting routes
 Route.where(Route.arel_table[:path].st_intersects(restricted_zone))
 
@@ -255,6 +261,7 @@ end
 🔍 **Spatial Query Methods**
 - Core methods: `st_distance`, `st_contains`, `st_within`, `st_length`
 - **NEW:** Advanced spatial operations:
+  - `<->` (distance_operator) - K-Nearest Neighbor search (blazing fast!)
   - `st_intersects` - Detect geometry intersections
   - `st_dwithin` - Efficient proximity queries (index-optimized!)
   - `st_buffer` - Create buffer zones around geometries
