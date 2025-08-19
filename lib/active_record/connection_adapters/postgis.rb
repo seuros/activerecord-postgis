@@ -19,6 +19,8 @@ require_relative "postgis/spatial_column_type"
 require_relative "postgis/adapter_extensions"
 require_relative "postgis/column_extensions"
 require_relative "postgis/quoting"
+require_relative "postgis/spatial_queries"
+require_relative "postgis/arel_extensions"
 
 module ActiveRecord
   module ConnectionAdapters
