@@ -139,7 +139,7 @@ module ActiveRecord
           # Ensure our type parsing is reasonably fast for high-frequency operations
           sql_types = [
             "geometry(Point,4326)",
-            "geography(Polygon,4326)", 
+            "geography(Polygon,4326)",
             "geometry(LineStringZ,3857)",
             "geography(MultiPointM,4269)",
             "geometry(GeometryCollectionZM,2154)",

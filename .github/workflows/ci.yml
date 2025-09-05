@@ -10,10 +10,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Ruby ${{ matrix.ruby }}
+    name: Ruby ${{ matrix.ruby }}, Rails ${{ matrix.rails }}
+
+    strategy:
+      matrix:
+        rails: ['8.1.0.beta1']
+
     env:
       RAILS_ENV: test
       DATABASE_URL: postgresql://ubuntu:ubuntu@localhost:5432
+      RAILS_VERSION: ${{ matrix.rails }}
 
     services:
       postgres:
@@ -42,13 +48,13 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         bundler-cache: true
-    
+
     - name: Setup databases
       run: |
         bin/rails app:db:create
         bin/rails app:db:migrate
         bin/rails app:db:create:secondary
         bin/rails app:db:migrate:secondary
-    
+
     - name: Run tests
       run: bin/rails test

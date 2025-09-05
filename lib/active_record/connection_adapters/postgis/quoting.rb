@@ -18,13 +18,15 @@ module ActiveRecord
         end
 
         def type_cast(value)
-          if value.is_a?(RGeo::Feature::Instance)
-            # Convert spatial objects to EWKT string for parameter binding
-            if value.srid && value.srid != 0
-              "SRID=#{value.srid};#{value.as_text}"
-            else
-              value.as_text
-            end
+          if RGeo::Feature::Geometry.check_type(value)
+            # Use EWKB format to preserve SRID information
+            RGeo::WKRep::WKBGenerator.new(
+              hex_format: true,
+              type_format: :ewkb,
+              emit_ewkb_srid: true
+            ).generate(value)
+          elsif value.is_a?(RGeo::Cartesian::BoundingBox)
+            value.to_s
           else
             super
           end

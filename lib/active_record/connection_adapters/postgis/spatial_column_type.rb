@@ -120,10 +120,15 @@ module ActiveRecord
           return base_type if @type == "geography"
 
           type_with_dimensions = build_type_with_dimensions
-          # Include SRID if specified and not the default for the type
-          # Geography defaults to 4326, geometry defaults to 0
-          should_include_srid = @srid &&
-            ((@geography && @srid != 4326) || (!@geography && @srid != 0))
+          # Include SRID if specified and not the default for the column type
+          # Geography columns: only include SRID if it's not the default 4326
+          # Geometry columns: always include SRID when specified and not 0
+          if @geography
+            should_include_srid = @srid && @srid != 4326
+          else
+            # For geometry columns, always include SRID when explicitly specified and not 0
+            should_include_srid = @srid && @srid != 0
+          end
 
           if should_include_srid
             "#{base_type}(#{type_with_dimensions},#{@srid})"

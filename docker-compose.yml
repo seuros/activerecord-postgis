@@ -1,8 +1,9 @@
 services:
  db:
-   image: "ghcr.io/seuros/postgis-with-extensions:16-3.4"
+   image: "ghcr.io/seuros/postgis-with-extensions:17-4"
    ports:
      - "5432:5432"
    environment:
-     POSTGRES_PASSWORD: postgres
+     POSTGRES_PASSWORD: ubuntu
+     POSTGRES_USER: ubuntu
      POSTGRES_DB: active_record_test
