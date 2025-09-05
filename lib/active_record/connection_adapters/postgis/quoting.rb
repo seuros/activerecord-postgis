@@ -21,8 +21,8 @@ module ActiveRecord
           if RGeo::Feature::Geometry.check_type(value)
             # Use EWKB format to preserve SRID information
             RGeo::WKRep::WKBGenerator.new(
-              hex_format: true, 
-              type_format: :ewkb, 
+              hex_format: true,
+              type_format: :ewkb,
               emit_ewkb_srid: true
             ).generate(value)
           elsif value.is_a?(RGeo::Cartesian::BoundingBox)

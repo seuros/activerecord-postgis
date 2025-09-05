@@ -19,7 +19,7 @@ module Arel
     class SpatialIntersects < SpatialNode; end
     class SpatialDWithin < SpatialNode
       attr_reader :distance
-      
+
       def initialize(left, right, distance)
         super(left, right)
         @distance = distance
@@ -36,7 +36,7 @@ module Arel
       end
     end
     class SpatialArea < Unary; end
-    
+
     # K-Nearest Neighbor distance operator
     class SpatialDistanceOperator < Binary
       def initialize(left, right)
@@ -83,11 +83,11 @@ module Arel
       def st_area
         SpatialArea.new(self)
       end
-      
+
       def distance_operator(other)
         SpatialDistanceOperator.new(self, other)
       end
-      
+
       alias :'<->' :distance_operator
     end
   end
@@ -129,11 +129,11 @@ module Arel
       def st_area
         Arel::Nodes::SpatialArea.new(self)
       end
-      
+
       def distance_operator(other)
         Arel::Nodes::SpatialDistanceOperator.new(self, other)
       end
-      
+
       alias :'<->' :distance_operator
     end
   end
@@ -141,6 +141,26 @@ module Arel
   # Add Arel.spatial() method
   def self.spatial(value)
     Arel::Nodes::SpatialValue.new(value)
+  end
+
+  # Add Arel.st_make_point() method that properly handles floats for Rails 8.1
+  def self.st_make_point(x, y, srid = nil)
+    # Wrap floats in SqlLiteral nodes to avoid Rails 8.1 Arel strictness
+    x_node = x.is_a?(Numeric) ? Arel::Nodes::SqlLiteral.new(x.to_s) : x
+    y_node = y.is_a?(Numeric) ? Arel::Nodes::SqlLiteral.new(y.to_s) : y
+
+    if srid
+      srid_node = srid.is_a?(Numeric) ? Arel::Nodes::SqlLiteral.new(srid.to_s) : srid
+      Arel::Nodes::NamedFunction.new(
+        "ST_SetSRID",
+        [
+          Arel::Nodes::NamedFunction.new("ST_MakePoint", [ x_node, y_node ]),
+          srid_node
+        ]
+      )
+    else
+      Arel::Nodes::NamedFunction.new("ST_MakePoint", [ x_node, y_node ])
+    end
   end
 
   module Visitors
@@ -230,7 +250,7 @@ module Arel
         visit(node.expr, collector)
         collector << ")"
       end
-      
+
       def visit_Arel_Nodes_SpatialDistanceOperator(node, collector)
         visit(node.left, collector)
         collector << " <-> "

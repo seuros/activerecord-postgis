@@ -99,7 +99,7 @@ module ActiveRecord
 
           pt1 = factory(srid: 3785).point(-1, -1)
           pt2 = factory(srid: 3785).point(4, 4)
-          bbox = RGeo::Cartesian::BoundingBox.create_from_points(pt1, pt2)
+          RGeo::Cartesian::BoundingBox.create_from_points(pt1, pt2) # Create bbox but don't store
           # Create polygon with proper SRID
           bbox_polygon = factory(srid: 3785).polygon(factory(srid: 3785).linear_ring([
             factory(srid: 3785).point(-1, -1), factory(srid: 3785).point(4, -1),

@@ -66,11 +66,11 @@ module ActiveRecord
         included do
           # Define commonly used spatial scopes
           scope :within_distance, ->(column, lon, lat, distance, srid: 4326, geographic: false) {
-            where_st_distance(column, lon, lat, '<', distance, srid: srid, geographic: geographic)
+            where_st_distance(column, lon, lat, "<", distance, srid: srid, geographic: geographic)
           }
 
           scope :beyond_distance, ->(column, lon, lat, distance, srid: 4326, geographic: false) {
-            where_st_distance(column, lon, lat, '>', distance, srid: srid, geographic: geographic)
+            where_st_distance(column, lon, lat, ">", distance, srid: srid, geographic: geographic)
           }
 
           scope :near, ->(column, lon, lat, distance, srid: 4326, geographic: false) {

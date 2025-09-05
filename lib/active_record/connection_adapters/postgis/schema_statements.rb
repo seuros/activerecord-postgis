@@ -91,6 +91,7 @@ module ActiveRecord
 
           PostgreSQL::Column.new(
             field["column_name"],
+            type_metadata.type,
             default_value,
             type_metadata,
             field["is_nullable"] == "YES",
