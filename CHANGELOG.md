@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.3.1...activerecord-postgis/v0.4.0) (2025-09-05)
+
+
+### Features
+
+* support rails 8.1 ([a127ad4](https://github.com/seuros/activerecord-postgis/commit/a127ad44a13d7340a53a8303c31071d89aaa9b2c))
+* support rails 8.1 ([4dc0af5](https://github.com/seuros/activerecord-postgis/commit/4dc0af59bbe480b8bfc4d445b2899b4368fdc403))
+
 ## [0.3.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.3.0...activerecord-postgis/v0.3.1) (2025-07-21)
 
 
