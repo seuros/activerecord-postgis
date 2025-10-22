@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir.glob('{lib}/**/*') + [ gemspec, 'LICENSE.txt', 'README.md' ]
   spec.require_paths = [ 'lib' ]
 
-  spec.add_dependency 'activerecord', '>= 8.1.0.beta1', '< 8.2'
+  spec.add_dependency 'activerecord', '>= 8.1.0', '< 8.2'
   spec.add_dependency 'pg'
   spec.add_dependency 'rgeo-activerecord', '>= 8.0'
 end
