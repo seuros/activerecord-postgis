@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.4.0...activerecord-postgis/v0.5.0) (2025-10-22)
+
+
+### Features
+
+* update to Rails 8.1.0 stable ([ae37109](https://github.com/seuros/activerecord-postgis/commit/ae371093f969bc47bb143087d911c8c5f72d4785))
+* update to Rails 8.1.0 stable ([931595d](https://github.com/seuros/activerecord-postgis/commit/931595d8c1108b579393108388e7dd856ed377d7))
+
 ## [0.4.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.3.1...activerecord-postgis/v0.4.0) (2025-09-05)
 
 
