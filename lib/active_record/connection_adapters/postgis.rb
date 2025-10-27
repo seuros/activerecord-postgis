@@ -20,6 +20,7 @@ require_relative "postgis/adapter_extensions"
 require_relative "postgis/column_extensions"
 require_relative "postgis/quoting"
 require_relative "postgis/spatial_queries"
+require_relative "postgis/database_statements"
 
 module ActiveRecord
   module ConnectionAdapters
@@ -89,6 +90,9 @@ module ActiveRecord
 
         # Prepend our extensions to handle spatial columns
         PostgreSQLAdapter.prepend(AdapterExtensions)
+
+        # Prevent spatial_reference_sys truncation
+        PostgreSQLAdapter.prepend(DatabaseStatements)
 
         # Register spatial types with ActiveRecord::Type - use st_* prefix to avoid conflicts
         adapter_name = :postgresql
