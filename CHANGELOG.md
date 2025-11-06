@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.5.0...activerecord-postgis/v0.5.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* skip-spatial-ref-system-truncate ([#15](https://github.com/seuros/activerecord-postgis/issues/15)) ([efe3233](https://github.com/seuros/activerecord-postgis/commit/efe3233824cef8ae1f7c1c2fef3808c9ad5ce6fe))
+
 ## [0.5.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.4.0...activerecord-postgis/v0.5.0) (2025-10-22)
 
 
