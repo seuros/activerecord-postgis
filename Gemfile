@@ -7,7 +7,7 @@ gemspec
 
 gem "rake", "~> 13.0"
 
-rails_version = ENV["RAILS_VERSION"] || "8.1.0"
+rails_version = ENV["RAILS_VERSION"] || "8.1.1"
 gem "railties", "~> #{rails_version}"
 gem "rails", "~> #{rails_version}"
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
