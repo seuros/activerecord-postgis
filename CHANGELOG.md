@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.5.1...activerecord-postgis/v0.6.0) (2026-01-08)
+
+
+### Features
+
+* use new PG type registration api ([#17](https://github.com/seuros/activerecord-postgis/issues/17)) ([2b8f673](https://github.com/seuros/activerecord-postgis/commit/2b8f67340124a5f218256bdc447ac6ae5b3d9752))
+
 ## [0.5.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.5.0...activerecord-postgis/v0.5.1) (2025-11-06)
 
 
