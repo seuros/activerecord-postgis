@@ -13,8 +13,9 @@ jobs:
     name: Ruby ${{ matrix.ruby }}, Rails ${{ matrix.rails }}
 
     strategy:
+      fail-fast: false
       matrix:
-        rails: ['8.1.1']
+        rails: ['8.1.1', 'edge']
 
     env:
       RAILS_ENV: test

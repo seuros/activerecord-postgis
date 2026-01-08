@@ -10,8 +10,13 @@ gem "rake", "~> 13.0"
 gem "minitest", "~> 5.0"
 
 rails_version = ENV["RAILS_VERSION"] || "8.1.1"
-gem "railties", "~> #{rails_version}"
-gem "rails", "~> #{rails_version}"
+
+if rails_version == "edge"
+  gem "rails", github: "rails/rails", branch: "main"
+else
+  gem "railties", "~> #{rails_version}"
+  gem "rails", "~> #{rails_version}"
+end
 
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 gem "rubocop-rails-omakase", require: false
