@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# <rails-lens:schema:begin>
+# database_dialect = "PostgreSQL"
+# <rails-lens:schema:end>
 # Base class for quantum entities existing in parallel universe
 class QuantumEntity < ApplicationRecord
   self.abstract_class = true

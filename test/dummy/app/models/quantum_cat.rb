@@ -1,5 +1,22 @@
 # frozen_string_literal: true
 
+# <rails-lens:schema:begin>
+# table = "quantum_cats"
+# database_dialect = "PostgreSQL"
+#
+# columns = [
+#   { name = "id", type = "uuid", pk = true, null = false },
+#   { name = "created_at", type = "datetime", null = false },
+#   { name = "name", type = "string" },
+#   { name = "updated_at", type = "datetime", null = false }
+# ]
+#
+# table_comment = "Quantum felines existing in superposition states until observed.
+#          Each cat exists simultaneously in all possible states within the PostGIS quantum spatial dimension.
+#          🚀⚛️ Part of the first Quantum Opensource Database for ActiveRecord - PostGIS Edition"
+#
+# notes = ["name:NOT_NULL", "name:LIMIT"]
+# <rails-lens:schema:end>
 # == Schema Information
 #
 # Table name: quantum_cats
