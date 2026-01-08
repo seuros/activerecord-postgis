@@ -23,4 +23,4 @@ gem "rubocop-rails-omakase", require: false
 
 gem "sqlite3", "~> 2.0"
 
-gem "ruby-lsp", "~> 0.23.23", group: :development
+gem "rails_lens", group: :development
