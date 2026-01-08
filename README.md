@@ -6,11 +6,11 @@
 
 This is the **next-generation PostGIS adapter** that brings PostGIS support to Rails the right way:
 
-✅ **Use standard `postgres://` URLs** - No custom adapter names, no special configuration  
-✅ **No monkey patching** - Clean extensions using Rails 8 patterns  
-✅ **No obscure hacks** - Transparent, well-documented implementation  
-✅ **Latest APIs** - Built for Rails 8+ and Ruby 3.3+  
-✅ **Zero configuration** - Just add the gem and it works  
+- **Use standard `postgres://` URLs** - No custom adapter names, no special configuration
+- **No monkey patching** - Clean extensions using Rails 8.1 patterns
+- **No obscure hacks** - Transparent, well-documented implementation
+- **Latest APIs** - Built for Rails 8.1+ and Ruby 3.3+
+- **Zero configuration** - Just add the gem and it works
 
 Unlike legacy PostGIS adapters that require custom database URLs, special configurations, and complex setup, this gem **extends the existing PostgreSQL adapter** seamlessly. Your database configuration stays clean and standard.
 
@@ -53,7 +53,7 @@ development:
 Create spatial columns using PostGIS types:
 
 ```ruby
-class CreateLocations < ActiveRecord::Migration[8.0]
+class CreateLocations < ActiveRecord::Migration[8.1]
   def change
     create_table :locations do |t|
       t.st_point :coordinates, srid: 4326
@@ -81,14 +81,14 @@ Location.where("ST_Distance(coordinates, ?) < ?", point, 1000)
 
 # Using parameterized queries (automatically quoted)
 locations_nearby = Location.where(
-  "ST_DWithin(coordinates, ?, ?)", 
-  point, 
+  "ST_DWithin(coordinates, ?, ?)",
+  point,
   1000  # meters
 )
 
 # Complex spatial queries
 parks_in_city = Park.where(
-  "ST_Within(boundary, ?)", 
+  "ST_Within(boundary, ?)",
   city_polygon
 )
 ```
@@ -186,28 +186,28 @@ class LocationTest < ActiveSupport::TestCase
     point1 = create_point(-5.9, 35.8)
     point2 = create_point(-5.91, 35.81)
     polygon = create_test_polygon
-    
+
     location = Location.create!(coordinates: point1, boundary: polygon)
-    
+
     # Traditional assertions
     assert_spatial_equal point1, location.coordinates
     assert_within_distance point1, point2, 200  # meters
     assert_contains polygon, point1
-    
+
     # New chainable syntax (recommended)
     assert_spatial_column(location.coordinates)
       .has_srid(4326)
       .is_type(:point)
       .is_geographic
-      
+
     assert_spatial_column(location.boundary)
       .is_type(:polygon)
       .has_srid(4326)
   end
-  
+
   def test_3d_geometry
     point_3d = create_point(1.0, 2.0, srid: 4326, z: 10.0)
-    
+
     assert_spatial_column(point_3d)
       .has_z
       .has_srid(4326)
@@ -237,7 +237,7 @@ end
 
 **Geometry Factories:**
 - `create_point(x, y, srid: 4326)` - Create test points
-- `create_test_polygon(srid: 4326)` - Create test polygons  
+- `create_test_polygon(srid: 4326)` - Create test polygons
 - `create_test_linestring(srid: 4326)` - Create test linestrings
 - `factory(srid: 4326, geographic: false)` - Get geometry factory
 - `geographic_factory(srid: 4326)` - Get geographic factory
@@ -245,20 +245,18 @@ end
 
 ## Documentation
 
-📚 **Learn Like You're Defending the Galaxy**
-
-- [🚀 Spatial Warfare Manual](docs/SPATIAL_WARFARE.md) - Advanced PostGIS arsenal explained through space combat
-- [🍳 The PostGIS Cookbook](docs/COOKBOOK.md) - Real-world recipes from delivery fleets to geofencing
+- [Spatial Warfare Manual](docs/SPATIAL_WARFARE.md) - Advanced PostGIS arsenal explained through space combat
+- [The PostGIS Cookbook](docs/COOKBOOK.md) - Real-world recipes from delivery fleets to geofencing
 
 ## Features
 
-🌍 **Complete PostGIS Type Support**
-- `st_point`, `st_line_string`, `st_polygon` 
+**Complete PostGIS Type Support**
+- `st_point`, `st_line_string`, `st_polygon`
 - `st_multi_point`, `st_multi_line_string`, `st_multi_polygon`
 - `st_geometry_collection`, `st_geography`
 - Support for SRID, Z/M dimensions
 
-🔍 **Spatial Query Methods**
+**Spatial Query Methods**
 - Core methods: `st_distance`, `st_contains`, `st_within`, `st_length`
 - **NEW:** Advanced spatial operations:
   - `<->` (distance_operator) - K-Nearest Neighbor search (blazing fast!)
@@ -270,13 +268,13 @@ end
 - Custom Arel visitor for PostGIS SQL generation
 - Seamless integration with ActiveRecord queries
 
-⚡ **Modern Architecture**
-- Built on Rails 8 patterns
+**Modern Architecture**
+- Built on Rails 8.1 patterns
 - Clean module extensions (no inheritance)
 - Proper type registration and schema dumping
 - Compatible with multi-database setups
 
-🛠️ **Developer Experience**
+**Developer Experience**
 - Standard `postgres://` URLs
 - Works with existing PostgreSQL tools
 - Clear error messages and debugging
@@ -287,17 +285,17 @@ end
 
 This gem builds upon the incredible work of many contributors to the Ruby geospatial ecosystem:
 
-🙏 **RGeo Ecosystem** - The foundation that makes Ruby geospatial possible:
+**RGeo Ecosystem** - The foundation that makes Ruby geospatial possible:
 - [RGeo](https://github.com/rgeo/rgeo) originally by Daniel Azuma, currently maintained by Keith Doggett (@keithdoggett) and Ulysse Buonomo (@BuonOmo)
 - [RGeo::ActiveRecord](https://github.com/rgeo/rgeo-activerecord) for ActiveRecord integration
 - [RGeo::Proj4](https://github.com/rgeo/rgeo-proj4) for coordinate system transformations
 - Former maintainer Tee Parham and all contributors who built this ecosystem
 
-🗺️ **PostGIS Pioneers** - Previous PostGIS adapters that paved the way:
+**PostGIS Pioneers** - Previous PostGIS adapters that paved the way:
 - [activerecord-postgis-adapter](https://github.com/rgeo/activerecord-postgis-adapter) by Daniel Azuma and the RGeo team
 - All the maintainers and contributors who solved spatial data challenges in Rails
 
-🌍 **PostGIS & GEOS** - The underlying spatial powerhouses:
+**PostGIS & GEOS** - The underlying spatial powerhouses:
 - PostGIS developers for the amazing spatial database extension
 - GEOS contributors for computational geometry
 - PostgreSQL team for the solid foundation
