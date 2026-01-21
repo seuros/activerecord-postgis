@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = spec.summary
   spec.homepage = 'https://github.com/seuros/activerecord-postgis'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.3.0'
+  spec.required_ruby_version = '>= 3.3.0', '< 5.0'
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
@@ -24,5 +24,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activerecord', '>= 8.1.0', '< 8.2'
   spec.add_dependency 'pg'
+  spec.add_dependency 'rgeo', '>= 3.1.0'
   spec.add_dependency 'rgeo-activerecord', '>= 8.0'
 end
