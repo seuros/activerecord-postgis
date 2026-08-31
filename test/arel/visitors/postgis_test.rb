@@ -6,7 +6,7 @@ module Arel
   module Visitors
     class PostGISTest < ActiveSupport::TestCase
       def test_st_intersects_with_attribute_and_geometry
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
         query_point = factory(srid: 3785).point(1, 2)
 
         node = table[:path].st_intersects(query_point)
@@ -17,7 +17,7 @@ module Arel
       end
 
       def test_st_dwithin_with_distance
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
         query_point = factory(srid: 4326).point(-72.1, 42.1)
 
         node = table[:latlon_geo].st_dwithin(query_point, 500)
@@ -29,7 +29,7 @@ module Arel
       end
 
       def test_st_buffer_with_distance
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
 
         node = table[:polygon].st_buffer(10)
 
@@ -39,7 +39,7 @@ module Arel
       end
 
       def test_st_transform_with_srid
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
 
         node = table[:latlon].st_transform(4326)
 
@@ -49,7 +49,7 @@ module Arel
       end
 
       def test_st_area_on_polygon
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
 
         node = table[:polygon].st_area
 
@@ -58,7 +58,7 @@ module Arel
       end
 
       def test_chained_spatial_functions
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
 
         # Test ST_Area on a buffered polygon
         node = table[:polygon].st_buffer(10).st_area
@@ -83,7 +83,7 @@ module Arel
       end
 
       def test_where_clause_with_st_dwithin
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
         query_point = factory(srid: 4326).point(-72.1, 42.1)
 
         # Simulate how ActiveRecord would use this
@@ -94,7 +94,7 @@ module Arel
       end
 
       def test_knn_distance_operator
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
         query_point = factory(srid: 3785).point(1, 2)
 
         # Test the <-> operator
@@ -105,7 +105,7 @@ module Arel
       end
 
       def test_knn_operator_alias
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
         query_point = factory(srid: 3785).point(1, 2)
 
         # Test the <-> alias
@@ -115,7 +115,7 @@ module Arel
       end
 
       def test_knn_in_order_clause
-        table = Arel::Table.new(:spatial_models)
+        table = SpatialModel.arel_table
         query_point = factory(srid: 4326).point(-72.1, 42.1)
 
         # Simulate ORDER BY with KNN
