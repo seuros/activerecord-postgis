@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.5.1...activerecord-postgis/v0.6.0) (2026-08-31)
+
+
+### Features
+
+* use new PG type registration api ([#17](https://github.com/seuros/activerecord-postgis/issues/17)) ([2b8f673](https://github.com/seuros/activerecord-postgis/commit/2b8f67340124a5f218256bdc447ac6ae5b3d9752))
+
+
+### Bug Fixes
+
+* support Rails 8.2 schema_ignored_tables ([9e08e13](https://github.com/seuros/activerecord-postgis/commit/9e08e135bc9b9d745edd351461cbf1a24c328764))
+* test ruby 4.0 ([6de7984](https://github.com/seuros/activerecord-postgis/commit/6de79842d9c7271f88e81d39cf73fd00541efea9))
+* use SpatialModel.arel_table in Arel visitor tests ([b7afd42](https://github.com/seuros/activerecord-postgis/commit/b7afd42f1c432e9abe5b97983aca9735c1d499c3))
+
 ## [0.5.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.5.0...activerecord-postgis/v0.5.1) (2025-11-06)
 
 
