@@ -10,20 +10,10 @@ class SchemaDumperTest < ActiveSupport::TestCase
     ActiveRecord::ConnectionAdapters::PostGIS.initialize!
   end
 
-  test "only postgres is affected by schema dump ignore tables" do
-    # List of tables to be ignored per your module
-    ignored_tables = %w[
-      geography_columns
-      geometry_columns
-      layer
-      raster_columns
-      raster_overviews
-      spatial_ref_sys
-      topology
-    ]
-
-    assert_equal(ignored_tables.to_set,
-                 ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaDumper.ignore_tables.to_set, "PostgreSQL ignore tables do not match expected tables")
+  test "postgis system tables are excluded from schema dumps" do
+    assert_operator(ActiveRecord::ConnectionAdapters::PostGIS.schema_ignored_tables.to_set,
+                    :>=, ActiveRecord::ConnectionAdapters::PostGIS::POSTGIS_SYSTEM_TABLES.to_set,
+                    "PostGIS system tables are missing from the ignore list")
   end
 
   test "dump postgis types" do

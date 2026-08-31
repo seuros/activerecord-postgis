@@ -35,6 +35,16 @@ module ActiveRecord
 
       SPATIAL_OPTIONS_FOR_REGISTRATION = %i[srid has_z has_m geographic].freeze
 
+      POSTGIS_SYSTEM_TABLES = %w[
+        geography_columns
+        geometry_columns
+        layer
+        raster_columns
+        raster_overviews
+        spatial_ref_sys
+        topology
+      ].freeze
+
       def self.initialize!
         return if @initialized
         @initialized = true
@@ -111,16 +121,20 @@ module ActiveRecord
         end
       end
 
+      def self.schema_ignored_tables
+        if ActiveRecord.respond_to?(:schema_ignored_tables)
+          ActiveRecord.schema_ignored_tables
+        else
+          PostgreSQL::SchemaDumper.ignore_tables
+        end
+      end
+
       def self.ignore_postgis_system_tables
-        PostgreSQL::SchemaDumper.ignore_tables |= %w[
-          geography_columns
-          geometry_columns
-          layer
-          raster_columns
-          raster_overviews
-          spatial_ref_sys
-          topology
-        ]
+        if ActiveRecord.respond_to?(:schema_ignored_tables)
+          ActiveRecord.schema_ignored_tables |= POSTGIS_SYSTEM_TABLES
+        else
+          PostgreSQL::SchemaDumper.ignore_tables |= POSTGIS_SYSTEM_TABLES
+        end
       end
 
       module TypeRegistration

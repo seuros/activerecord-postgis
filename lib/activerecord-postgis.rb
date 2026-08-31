@@ -10,3 +10,5 @@ require "rgeo-activerecord"
 ActiveSupport.on_load(:active_record_postgresqladapter) do
   ActiveRecord::ConnectionAdapters::PostGIS.initialize!
 end
+
+require_relative "active_record/connection_adapters/postgis/railtie" if defined?(Rails::Railtie)
