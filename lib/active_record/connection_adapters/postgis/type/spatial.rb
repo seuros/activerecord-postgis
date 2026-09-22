@@ -15,13 +15,6 @@ module ActiveRecord
             @has_z = has_z
             @has_m = has_m
             @geographic = geographic
-            @factory = RGeo::ActiveRecord::SpatialFactoryStore.instance.factory(
-              geo_type: @geo_type.underscore,
-              srid: srid,
-              has_z: has_z,
-              has_m: has_m,
-              sql_type: (@geographic ? "geography" : "geometry")
-            )
           end
 
           def type
@@ -40,6 +33,18 @@ module ActiveRecord
 
           private
 
+          # Not memoized: types are frozen for Ractor sharing, and factories
+          # hold mutexes/procs. SpatialFactoryStore already caches them.
+          def factory
+            RGeo::ActiveRecord::SpatialFactoryStore.instance.factory(
+              geo_type: @geo_type.underscore,
+              srid: @srid,
+              has_z: @has_z,
+              has_m: @has_m,
+              sql_type: (@geographic ? "geography" : "geometry")
+            )
+          end
+
           def cast_value(value)
             case value
             when ::RGeo::Feature::Instance
@@ -56,11 +61,11 @@ module ActiveRecord
           def parse_wkt(string)
             if binary_string?(string)
               # Parse WKB (Well-Known Binary) format
-              wkb_parser = RGeo::WKRep::WKBParser.new(@factory, support_ewkb: true, default_srid: @srid)
+              wkb_parser = RGeo::WKRep::WKBParser.new(factory, support_ewkb: true, default_srid: @srid)
               wkb_parser.parse(string)
             else
               # Parse WKT (Well-Known Text) format
-              wkt_parser = RGeo::WKRep::WKTParser.new(@factory, support_ewkt: true, default_srid: @srid)
+              wkt_parser = RGeo::WKRep::WKTParser.new(factory, support_ewkt: true, default_srid: @srid)
               wkt_parser.parse(string)
             end
           rescue RGeo::Error::ParseError
@@ -74,7 +79,7 @@ module ActiveRecord
           def parse_hash(hash)
             # Support GeoJSON-style hash
             if hash["type"] && hash["coordinates"]
-              RGeo::GeoJSON.decode(hash.to_json, geo_factory: @factory)
+              RGeo::GeoJSON.decode(hash.to_json, geo_factory: factory)
             else
               nil
             end
