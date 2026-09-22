@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.6.0...activerecord-postgis/v0.6.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* don't memoize RGeo factory in spatial types ([#20](https://github.com/seuros/activerecord-postgis/issues/20)) ([d9e9f08](https://github.com/seuros/activerecord-postgis/commit/d9e9f08785549c74df24640c0403735394b5399e))
+
 ## [0.6.0](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.5.1...activerecord-postgis/v0.6.0) (2026-08-31)
 
 
