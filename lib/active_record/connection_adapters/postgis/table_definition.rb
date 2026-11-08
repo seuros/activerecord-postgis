@@ -22,8 +22,9 @@ module ActiveRecord
           end
 
           if spatial_column_type?(col_type)
-            if (limit = options.delete(:limit)) && limit.is_a?(::Hash)
-              options.merge!(limit)
+            case (limit = options.delete(:limit))
+            when ::Hash then options.merge!(limit)
+            when ::String then options.reverse_merge!(ColumnDefinitionUtils.options_from_limit(limit))
             end
 
             # Set geographic option for geography types
@@ -123,6 +124,17 @@ module ActiveRecord
             else
               "GEOMETRY"  # Default fallback
             end
+          end
+
+          # Inverse of limit_from_options: "POINTZ,4326" => { srid: 4326, has_z: true }
+          def options_from_limit(limit)
+            geo_part, srid_part = limit.split(",", 2)
+            dimensions = geo_part.to_s.upcase[/(ZM|Z|M)\z/].to_s
+            options = {}
+            options[:srid] = Integer(srid_part) if srid_part.present?
+            options[:has_z] = true if dimensions.include?("Z")
+            options[:has_m] = true if dimensions.include?("M")
+            options
           end
 
           def limit_from_options(type, options = {})

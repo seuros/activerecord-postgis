@@ -28,6 +28,20 @@ module ActiveRecord
           assert_equal "geometry(Point,4326)", adapter.type_to_sql(:st_point, limit: "POINT,4326")
         end
 
+        def test_string_limit_keeps_srid_and_dimensions
+          klass.lease_connection.create_table(:spatial_models, force: true) do |t|
+            t.column "pt", :st_point, limit: "POINT,4326"
+            t.column "ptz", :st_point, limit: "POINTZ,3857"
+          end
+          klass.lease_connection.add_column(:spatial_models, :added, :st_point, limit: "POINT,4326")
+
+          assert_equal "geometry(Point,4326)", sql_type_of(:pt)
+          assert_equal "geometry(PointZ,3857)", sql_type_of(:ptz)
+          assert_equal "geometry(Point,4326)", sql_type_of(:added)
+        ensure
+          klass.lease_connection.drop_table(:spatial_models, if_exists: true)
+        end
+
         def test_create_spatial_columns_without_column_definition_deprecations
           assert_not_deprecated(ActiveRecord.deprecator) do
             klass.lease_connection.create_table(:spatial_models, force: true) do |t|
@@ -411,6 +425,13 @@ module ActiveRecord
 
         def klass
           SpatialModel
+        end
+
+        def sql_type_of(column)
+          klass.lease_connection.select_value(<<~SQL)
+            SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+            WHERE attrelid = '#{klass.table_name}'::regclass AND attname = '#{column}'
+          SQL
         end
 
         def count_geometry_columns
