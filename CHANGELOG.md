@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.6.1...activerecord-postgis/v0.6.2) (2026-11-08)
+
+
+### Bug Fixes
+
+* keep SRID and dimensions from string limits on spatial columns ([#24](https://github.com/seuros/activerecord-postgis/issues/24)) ([b37e347](https://github.com/seuros/activerecord-postgis/commit/b37e347f039accc69cf45bae253e49032d55fc24))
+* read spatial column limit, precision and scale from options (Rails main deprecations) ([#22](https://github.com/seuros/activerecord-postgis/issues/22)) ([0b11f97](https://github.com/seuros/activerecord-postgis/commit/0b11f97e80cf3f87acbd9235f71c1de8d0d9abc3))
+
 ## [0.6.1](https://github.com/seuros/activerecord-postgis/compare/activerecord-postgis/v0.6.0...activerecord-postgis/v0.6.1) (2026-09-22)
 
 
