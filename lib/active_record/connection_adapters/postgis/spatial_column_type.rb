@@ -25,9 +25,9 @@ module ActiveRecord
                 has_z = geo_part.end_with?("Z") || geo_part.end_with?("ZM")
                 has_m = geo_part.end_with?("M") || geo_part.end_with?("ZM")
               end
-            elsif o.limit.is_a?(String) && o.limit.include?(",")
+            elsif o.options[:limit].is_a?(String) && o.options[:limit].include?(",")
               # Fallback to parsing limit string (for schema loading)
-              geo_part, srid_part = o.limit.split(",", 2)
+              geo_part, srid_part = o.options[:limit].split(",", 2)
               srid = srid_part.to_i if srid_part && !srid_part.empty?
               if geo_part
                 has_z = geo_part.end_with?("Z") || geo_part.end_with?("ZM")
@@ -42,9 +42,9 @@ module ActiveRecord
             end
 
             sql_type = type_to_sql(o.type.to_sym,
-                                   limit: o.options[:spatial_sql] || o.limit,
-                                   precision: o.precision,
-                                   scale: o.scale,
+                                   limit: o.options[:spatial_sql] || o.options[:limit],
+                                   precision: o.options[:precision],
+                                   scale: o.options[:scale],
                                    srid: srid,
                                    geographic: geographic,
                                    has_z: has_z,
