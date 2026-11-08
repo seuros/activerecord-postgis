@@ -28,6 +28,24 @@ module ActiveRecord
           assert_equal "geometry(Point,4326)", adapter.type_to_sql(:st_point, limit: "POINT,4326")
         end
 
+        def test_create_spatial_columns_without_column_definition_deprecations
+          assert_not_deprecated(ActiveRecord.deprecator) do
+            klass.lease_connection.create_table(:spatial_models, force: true) do |t|
+              t.st_point "options_path", srid: 3857
+              t.st_point "geo", geographic: true
+              t.virtual "centroid", type: :st_point, as: "(st_centroid((geo)::geometry))::geography", stored: true, geographic: true
+              t.decimal "amount", precision: 10, scale: 2
+            end
+          end
+          klass.reset_column_information
+          columns = klass.columns.index_by(&:name)
+          assert_equal 3857, columns["options_path"].srid
+          assert_predicate columns["centroid"], :geographic?
+          assert_equal [ 10, 2 ], [ columns["amount"].precision, columns["amount"].scale ]
+        ensure
+          klass.lease_connection.drop_table(:spatial_models, if_exists: true)
+        end
+
         def test_create_simple_geometry
           klass.lease_connection.create_table(:spatial_models, force: true) do |t|
             t.column "latlon", :geometry
